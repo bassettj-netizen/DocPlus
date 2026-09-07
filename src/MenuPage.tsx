@@ -6,6 +6,11 @@ const groups = [
       { label: 'Button List', path: '/bulk-approvals/version-2' },
       { label: 'Collapsible', path: '/bulk-approvals/version-3' },
       { label: 'Dropdown', path: '/bulk-approvals/version-4' },
+      { label: 'Approvals 1', path: '/bulk-approvals/approvals-1' },
+      { label: 'Approvals 2', path: '/bulk-approvals/approvals-2' },
+      { label: 'Approvals 3', path: '/bulk-approvals/approvals-3' },
+      { label: 'Approvals 4', path: '/bulk-approvals/approvals-4' },
+      { label: 'Approvals 5', path: '/bulk-approvals/approvals-5' },
     ],
   },
 ]
