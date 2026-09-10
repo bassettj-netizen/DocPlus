@@ -20,6 +20,10 @@ import PanelHeader from './PanelHeader'
 
 const { colorPalette } = constants
 const EMAIL_PATTERN = /\S+@\S+\.\S+/
+const VISIBLE_DOCUMENT_ROWS = 6
+// Each document row renders at a fixed 56px (8px vertical padding + a
+// two-line label + 1px border), so this caps the list to exactly 6 rows.
+const DOCUMENT_ROW_HEIGHT = 56
 
 interface SelectOption {
   label: string
@@ -84,6 +88,9 @@ export default function RequestApprovalPanel({
   onSubmit,
 }: RequestApprovalPanelProps) {
   const canSend = approvers.length > 0 && !!expirationDate
+
+  const documentListMaxHeight =
+    matchingDocuments.length > VISIBLE_DOCUMENT_ROWS ? VISIBLE_DOCUMENT_ROWS * DOCUMENT_ROW_HEIGHT : undefined
 
   const selectableMatchingDocuments = matchingDocuments.filter((doc) => !disabledDocumentIds.has(doc.id))
   const activeApprover = approvers.find((approver) => approver.id === expandedApproverId)
@@ -207,38 +214,47 @@ export default function RequestApprovalPanel({
                                 <Typography color="neutral-darken2">No documents match your search.</Typography>
                               </div>
                             ) : (
-                              matchingDocuments.map((doc) => {
-                                const isDisabled = disabledDocumentIds.has(doc.id)
-                                return (
-                                  <div
-                                    key={doc.id}
-                                    style={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      padding: '8px 4px',
-                                      borderBottom: `1px solid ${colorPalette.neutral.lighten2}`,
-                                      backgroundColor: isDisabled ? colorPalette.disabled.lighten5 : undefined,
-                                    }}
-                                  >
-                                    <Checkbox
-                                      checked={!isDisabled && selectedIds.includes(doc.id)}
-                                      disabled={isDisabled}
-                                      onChange={() => onToggleDocument(doc.id)}
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  maxHeight: documentListMaxHeight,
+                                  overflowY: documentListMaxHeight ? 'auto' : undefined,
+                                }}
+                              >
+                                {matchingDocuments.map((doc) => {
+                                  const isDisabled = disabledDocumentIds.has(doc.id)
+                                  return (
+                                    <div
+                                      key={doc.id}
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        padding: '8px 4px',
+                                        borderBottom: `1px solid ${colorPalette.neutral.lighten2}`,
+                                        backgroundColor: isDisabled ? colorPalette.disabled.lighten5 : undefined,
+                                      }}
                                     >
-                                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <Typography weight="semibold" color={isDisabled ? 'disabled-base' : undefined}>
-                                          {doc.employeeName}
-                                        </Typography>
-                                        <Typography size="base-sm" color={isDisabled ? 'disabled-base' : 'neutral-darken2'}>
-                                          {isDisabled
-                                            ? 'Already assigned to another approver'
-                                            : `${doc.position} • ${doc.organisation}`}
-                                        </Typography>
-                                      </div>
-                                    </Checkbox>
-                                  </div>
-                                )
-                              })
+                                      <Checkbox
+                                        checked={!isDisabled && selectedIds.includes(doc.id)}
+                                        disabled={isDisabled}
+                                        onChange={() => onToggleDocument(doc.id)}
+                                      >
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                          <Typography weight="semibold" color={isDisabled ? 'disabled-base' : undefined}>
+                                            {doc.employeeName}
+                                          </Typography>
+                                          <Typography size="base-sm" color={isDisabled ? 'disabled-base' : 'neutral-darken2'}>
+                                            {isDisabled
+                                              ? 'Already assigned to another approver'
+                                              : `${doc.position} • ${doc.organisation}`}
+                                          </Typography>
+                                        </div>
+                                      </Checkbox>
+                                    </div>
+                                  )
+                                })}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -257,6 +273,9 @@ export default function RequestApprovalPanel({
                   placeholder="Insert email"
                   value={sendToValue}
                   onChange={(event) => onSendToChange(event.target.value)}
+                  onPressEnter={() => {
+                    if (EMAIL_PATTERN.test(sendToValue.trim())) onAddApprover()
+                  }}
                   helper="Anyone with access to this email will be able to open the link"
                 />
               </div>
