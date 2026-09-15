@@ -1,8 +1,11 @@
 import {
+  ButtonGhost,
   ButtonPrimary,
   ButtonTertiary,
   constants,
   DatePicker,
+  Icon,
+  iconType,
   Input,
   Panel,
   TextArea,
@@ -20,6 +23,7 @@ interface RequestApprovalPanelProps {
   sendToValue: string
   onSendToChange: (value: string) => void
   onAddApprover: () => void
+  onRemoveApprover: (approverId: string) => void
   message: string
   onMessageChange: (value: string) => void
   expirationDate: Date | undefined
@@ -37,6 +41,7 @@ export default function RequestApprovalPanel({
   sendToValue,
   onSendToChange,
   onAddApprover,
+  onRemoveApprover,
   message,
   onMessageChange,
   expirationDate,
@@ -93,11 +98,16 @@ export default function RequestApprovalPanel({
                 }}
               >
                 <Typography>{approver.email}</Typography>
-                <ButtonTertiary onClick={() => onOpenAssignDocuments(approver.id)}>
-                  {approver.documentIds.length > 0
-                    ? `${approver.documentIds.length} document${approver.documentIds.length === 1 ? '' : 's'} assigned`
-                    : 'Assign documents'}
-                </ButtonTertiary>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ButtonTertiary onClick={() => onOpenAssignDocuments(approver.id)}>
+                    {approver.documentIds.length > 0
+                      ? `${approver.documentIds.length} document${approver.documentIds.length === 1 ? '' : 's'} assigned`
+                      : 'Assign documents'}
+                  </ButtonTertiary>
+                  <ButtonGhost size="small" onClick={() => onRemoveApprover(approver.id)} ariaLabel="Remove approver">
+                    <Icon type={iconType.TrashOutlined} size={16} />
+                  </ButtonGhost>
+                </div>
               </div>
             ))}
 

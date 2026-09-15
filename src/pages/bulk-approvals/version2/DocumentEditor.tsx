@@ -80,6 +80,10 @@ export default function DocumentEditor() {
     setSendToValue('')
   }
 
+  const handleRemoveApprover = (approverId: string) => {
+    setApprovers((prev) => prev.filter((approver) => approver.id !== approverId))
+  }
+
   const handleOpenAssignDocuments = (approverId: string) => {
     const approver = approvers.find((a) => a.id === approverId)
     setActiveApproverId(approverId)
@@ -163,6 +167,7 @@ export default function DocumentEditor() {
         sendToValue={sendToValue}
         onSendToChange={setSendToValue}
         onAddApprover={handleAddApprover}
+        onRemoveApprover={handleRemoveApprover}
         message={message}
         onMessageChange={setMessage}
         expirationDate={expirationDate}

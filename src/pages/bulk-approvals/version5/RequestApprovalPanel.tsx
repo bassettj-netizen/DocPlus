@@ -2,8 +2,9 @@ import {
   ButtonGhost,
   ButtonPrimary,
   ButtonTertiary,
-  constants,
+  ClickableContainer,
   DatePicker,
+  Icon,
   Input,
   iconType,
   Panel,
@@ -13,7 +14,6 @@ import {
 import type { Approver } from './data'
 import PanelHeader from './PanelHeader'
 
-const { colorPalette } = constants
 const EMAIL_PATTERN = /\S+@\S+\.\S+/
 
 interface RequestApprovalPanelProps {
@@ -22,6 +22,7 @@ interface RequestApprovalPanelProps {
   sendToValue: string
   onSendToChange: (value: string) => void
   onAddApprover: () => void
+  onRemoveApprover: (approverId: string) => void
   message: string
   onMessageChange: (value: string) => void
   expirationDate: Date | undefined
@@ -39,6 +40,7 @@ export default function RequestApprovalPanel({
   sendToValue,
   onSendToChange,
   onAddApprover,
+  onRemoveApprover,
   message,
   onMessageChange,
   expirationDate,
@@ -83,22 +85,31 @@ export default function RequestApprovalPanel({
             </div>
 
             {approvers.map((approver) => (
-              <div
-                key={approver.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  border: `1px solid ${colorPalette.neutral.lighten2}`,
-                  borderRadius: 8,
-                  padding: '8px 8px 8px 12px',
-                }}
-              >
-                <Typography>{approver.email}</Typography>
-                <ButtonGhost rightIcon={iconType.ChevronRightOutlined} onClick={() => onOpenAssignDocuments(approver.id)}>
-                  {approver.documentIds.length > 0
-                    ? `${approver.documentIds.length} document${approver.documentIds.length === 1 ? '' : 's'} assigned`
-                    : 'Assign documents'}
+              <div key={approver.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <ClickableContainer as="div" dashed={false} width="expanded" onClick={() => onOpenAssignDocuments(approver.id)}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        padding: '12px 8px 12px 12px',
+                      }}
+                    >
+                      <Typography>{approver.email}</Typography>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Typography weight="semibold" color="neutral-darken2">
+                          {approver.documentIds.length} document{approver.documentIds.length === 1 ? '' : 's'} assigned
+                        </Typography>
+                        <Icon type={iconType.ChevronRightOutlined} color="neutral-darken2" size={16} />
+                      </div>
+                    </div>
+                  </ClickableContainer>
+                </div>
+                <ButtonGhost size="medium" onClick={() => onRemoveApprover(approver.id)} ariaLabel="Remove approver">
+                  <Icon type={iconType.TrashOutlined} />
                 </ButtonGhost>
               </div>
             ))}
