@@ -120,8 +120,8 @@ export default function RequestApprovalPanel({
                   placeholder="Insert email"
                   value={sendToValue}
                   onChange={(event) => onSendToChange(event.target.value)}
-                  onPressEnter={() => {
-                    if (EMAIL_PATTERN.test(sendToValue.trim())) onAddApprover()
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && EMAIL_PATTERN.test(sendToValue.trim())) onAddApprover()
                   }}
                   helper="Anyone with access to this email will be able to open the link"
                 />
