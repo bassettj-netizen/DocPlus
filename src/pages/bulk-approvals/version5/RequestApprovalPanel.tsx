@@ -85,33 +85,43 @@ export default function RequestApprovalPanel({
             </div>
 
             {approvers.map((approver) => (
-              <div key={approver.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ flex: 1 }}>
-                  <ClickableContainer as="div" dashed={false} width="expanded" onClick={() => onOpenAssignDocuments(approver.id)}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        padding: '12px 8px 12px 12px',
+              <ClickableContainer
+                key={approver.id}
+                as="div"
+                dashed={false}
+                width="expanded"
+                onClick={() => onOpenAssignDocuments(approver.id)}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '12px 8px 12px 12px',
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    <Typography as="span">{approver.email}</Typography>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <Typography weight="semibold" color="neutral-darken2">
+                      {approver.documentIds.length} document{approver.documentIds.length === 1 ? '' : 's'} assigned
+                    </Typography>
+                    <ButtonGhost
+                      size="small"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onRemoveApprover(approver.id)
                       }}
+                      ariaLabel="Remove approver"
                     >
-                      <Typography>{approver.email}</Typography>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Typography weight="semibold" color="neutral-darken2">
-                          {approver.documentIds.length} document{approver.documentIds.length === 1 ? '' : 's'} assigned
-                        </Typography>
-                        <Icon type={iconType.ChevronRightOutlined} color="neutral-darken2" size={16} />
-                      </div>
-                    </div>
-                  </ClickableContainer>
+                      <Icon type={iconType.TrashOutlined} size={16} />
+                    </ButtonGhost>
+                  </div>
                 </div>
-                <ButtonGhost size="medium" onClick={() => onRemoveApprover(approver.id)} ariaLabel="Remove approver">
-                  <Icon type={iconType.TrashOutlined} />
-                </ButtonGhost>
-              </div>
+              </ClickableContainer>
             ))}
 
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%' }}>
