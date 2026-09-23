@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Icon, iconType, Sidebar } from '@goat-ui/goat-ui-core'
+import { Sidebar } from '@goat-ui/goat-ui-core'
 import type { SidebarItem } from '@goat-ui/goat-ui-core'
 import hrdLogo from '../../../assets/hrd-product-logo.svg'
-import { TemplatesIcon } from '../navIcons'
+import { ChangeLogIcon, LegalChangesIcon, TemplatesIcon } from '../navIcons'
 
 // The DS only adds icon spacing to its own <Icon> component, so these inline
 // SVGs (see navIcons.tsx for why they're inlined rather than <img>-loaded)
@@ -33,14 +33,24 @@ export default function ChangeLogSidebar({ collapsed, onCollapsedChange }: Chang
       onClick: () => {},
     },
     {
-      key: 'updates',
-      label: 'Updates',
+      key: 'legal-changes',
+      label: 'Legal Changes',
       icon: (
         <NavIcon>
-          <Icon type={iconType.RefreshOutlined} />
+          <LegalChangesIcon />
         </NavIcon>
       ),
-      onClick: () => navigate('/back-office/updates/home'),
+      onClick: () => navigate('/back-office/legal-changes/home'),
+    },
+    {
+      key: 'change-log',
+      label: 'Change Log',
+      icon: (
+        <NavIcon>
+          <ChangeLogIcon />
+        </NavIcon>
+      ),
+      onClick: () => {},
     },
   ] as unknown as SidebarItem[]
 
@@ -51,7 +61,7 @@ export default function ChangeLogSidebar({ collapsed, onCollapsedChange }: Chang
       collapsible
       onCollapsedChange={onCollapsedChange}
       topItems={topItems}
-      activeKeys={[]}
+      activeKeys={['change-log']}
       logoProps={{
         label: 'HR Dokumente',
         src: <img src={hrdLogo} alt="" width={32} height={32} />,
