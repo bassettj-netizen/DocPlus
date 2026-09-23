@@ -20,12 +20,14 @@ function Field({ label, value }: { label: string; value: string }) {
   )
 }
 
-// The one detail panel for every Change Log row. An "Other" reason entry
-// (a manual publish/import unrelated to a legal change) has no Content Hub
-// text to show, so Source and the two Change notification fields only render
-// for "Legal" reason entries — matching the design's two panel lengths.
+// The one detail panel for every Change Log row. A "Manually created" reason
+// entry (a manual publish/import unrelated to a legal change) has no Content
+// Hub text to show, so Source only renders for "Legal change" reason entries
+// — and the two notification sections additionally require "Send
+// Notification" to have been checked, since otherwise no notification was
+// ever sent.
 export default function ChangeLogPanel({ visible, entry, onClose, onCancelPublishing }: ChangeLogPanelProps) {
-  const isLegal = entry?.changeReason === 'Legal Update'
+  const isLegal = entry?.changeReason === 'Legal change'
   const canCancelPublishing = entry?.status === 'scheduled'
 
   return (
@@ -69,10 +71,32 @@ export default function ChangeLogPanel({ visible, entry, onClose, onCancelPublis
           {isLegal && entry.source && <Field label="Source" value={entry.source} />}
           <Field label="Author" value={entry.author} />
           <Field label="Folder" value={entry.folder} />
-          <Field label="Update date" value={entry.changeDate} />
-          {isLegal && entry.legalUpdate && <Field label="Change notification" value={entry.legalUpdate} />}
-          {isLegal && entry.changeNotification && (
-            <Field label="Change notification" value={entry.changeNotification} />
+          <Field label="Change date" value={entry.changeDate} />
+          {/* Both sections describe a notification that went out to users — if
+              "Send Notification" was never checked, no notification exists to
+              show details for, so neither renders. */}
+          {isLegal && entry.sendNotification && entry.legalUpdate && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Typography as="span" weight="semibold">
+                Change notification
+              </Typography>
+              <Typography as="span" size="base-sm">
+                <Typography as="span" size="base-sm" weight="bold">
+                  Content Hub:{' '}
+                </Typography>
+                {entry.legalUpdate}
+              </Typography>
+            </div>
+          )}
+          {isLegal && entry.sendNotification && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Typography as="span" weight="semibold">
+                Notification to users
+              </Typography>
+              <Typography as="span" size="base-sm">
+                {entry.changeNotification}
+              </Typography>
+            </div>
           )}
         </div>
       )}

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { avatarSizeEnum, Chip, constants, Layout, Tabs, toastPlacements, Typography, useNotifications } from '@goat-ui/goat-ui-core'
 import type { TableColumnsType } from '@goat-ui/goat-ui-core'
 import haufeWordmark from '../../../assets/haufe-wordmark.svg'
-import { CHANGE_NOTIFICATION_TEXT, PENDING_CHANGES, type LegalChange } from '../legal-changes/data'
+import { PENDING_CHANGES, type LegalChange } from '../legal-changes/data'
 import TemplatesTableCard from '../legal-changes/TemplatesTableCard'
 import PendingTemplatePanel from '../legal-changes/PendingTemplatePanel'
 import UpdateTemplatePanel, { type UpdateDraft } from '../legal-changes/UpdateTemplatePanel'
@@ -113,11 +113,10 @@ export default function UpdatesPage() {
       templateName: change.templateName,
       haufeIndex: change.haufeIndex,
       changeType: 'Update',
-      changeReason: 'Legal Update',
+      changeReason: 'Legal change',
       originalTemplateId: change.originalTemplateId,
       source: 'Content hub',
       legalUpdate: change.legalUpdate,
-      changeNotification: CHANGE_NOTIFICATION_TEXT,
       ...entry,
     })
   }
@@ -137,11 +136,13 @@ export default function UpdatesPage() {
 
   const handleStartUpdate = () => {
     if (!activeChange) return
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
     setDraft({
       updatedTemplateId: '',
       author: activeChange.author,
-      folder: '',
-      updateDate: undefined,
+      folder: activeChange.folder,
+      updateDate: today,
       sendNotification: false,
       notificationText: '',
     })
@@ -151,9 +152,11 @@ export default function UpdatesPage() {
   const handleSaveUpdate = () => {
     if (!activeChange) return
 
-    // The panel has no inline validation in the design — an incomplete form
-    // surfaces the designed error toast instead.
-    if (!draft.updatedTemplateId.trim() || !draft.folder || !draft.updateDate) {
+    // The updated template ID has its own inline error in the panel, so it
+    // can't reach here empty — folder and publish date are pre-filled but
+    // still guarded in case the user clears them, surfacing the generic
+    // error toast instead of a field-level message.
+    if (!draft.folder || !draft.updateDate) {
       notification.error({
         title: 'There was an issue saving the changes. Please try again.',
         placement: toastPlacements.TOP_RIGHT,
@@ -161,10 +164,9 @@ export default function UpdatesPage() {
       return
     }
 
-    // A custom notification the user wrote while "Inform HRD users" was
-    // checked becomes the record shown in the History tab; otherwise it
-    // falls back to the default excerpt `recordReview` already fills in.
-    const customNotification = draft.sendNotification ? draft.notificationText.trim() : ''
+    // The History tab only shows a "Notification to users" section when this
+    // checkbox was actually checked — and shows exactly what was typed here,
+    // not a default excerpt.
     const status = statusForUpdateDate(draft.updateDate)
 
     recordReview(activeChange, {
@@ -173,7 +175,8 @@ export default function UpdatesPage() {
       updatedTemplateId: draft.updatedTemplateId.trim(),
       author: draft.author,
       folder: draft.folder,
-      ...(customNotification && { changeNotification: customNotification }),
+      sendNotification: draft.sendNotification,
+      ...(draft.sendNotification && { changeNotification: draft.notificationText.trim() }),
     })
     notification.success({
       title: status === 'scheduled' ? `Template scheduled for ${formatDate(draft.updateDate)}` : 'Template updated',
@@ -214,12 +217,6 @@ export default function UpdatesPage() {
       dataIndex: 'inboundDate',
       key: 'inboundDate',
       sorter: (a, b) => parseDate(a.inboundDate) - parseDate(b.inboundDate),
-    },
-    {
-      title: 'Source',
-      dataIndex: 'source',
-      key: 'source',
-      sorter: (a, b) => a.source.localeCompare(b.source),
     },
   ]
 

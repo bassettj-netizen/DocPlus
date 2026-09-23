@@ -62,11 +62,10 @@ export default function PendingTemplatePanel({
             <Typography>{change.legalUpdate}</Typography>
           </div>
 
-          <Field label="Date  (Content hub)" value={change.contentHubDate} />
+          <Field label="Inbound date (Content hub)" value={change.contentHubDate} />
           <Field label="Template ID" value={change.haufeIndex} />
           <Field label="Author" value={change.author} />
           <Field label="Folder" value={change.folder} />
-          <Field label="Source" value={change.source} />
         </div>
       )}
     </Panel>

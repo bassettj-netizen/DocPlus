@@ -6,7 +6,7 @@ import type { ChipStyleValue } from '@goat-ui/goat-ui-core'
 // only tracks legal-amendment reviews), this log records every publishing
 // action against a template — legal or otherwise — in one place.
 
-export type ChangeReason = 'Legal Update' | 'Other'
+export type ChangeReason = 'Legal change' | 'Manually created'
 export type ChangeType = 'Update' | 'Publish' | 'Import'
 export type ChangeStatus = 'scheduled' | 'published' | 'discarded'
 
@@ -16,16 +16,18 @@ export interface ChangeLogEntry {
   haufeIndex: string
   changeType: ChangeType
   changeReason: ChangeReason
-  /** Shown as both the table's "Change Date" column and the panel's "Update date" field. */
+  /** Shown as both the table's "Change Date" column and the panel's "Change date" field. */
   changeDate: string
   status: ChangeStatus
   originalTemplateId: string
   updatedTemplateId: string
   author: string
   folder: string
-  /** Legal-reason entries only — the design panel has no Source/notification fields for "Other". */
+  /** Legal-reason entries only — the design panel has no Source/notification fields for "Manually created". */
   source?: string
   legalUpdate?: string
+  /** Whether "Send Notification" was checked when this change was made — the "Notification to users" section in the panel only shows when this is true. */
+  sendNotification?: boolean
   changeNotification?: string
 }
 
@@ -63,7 +65,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Zeugnis, einfaches Arbeitszeugnis',
     haufeIndex: 'HI210556',
     changeType: 'Update',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '13/11/2025',
     status: 'scheduled',
     originalTemplateId: '6a6867d3-f314-439b-8fc3-8f607c4e6717',
@@ -74,7 +76,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Weiterbildungsvereinbarung mit Rückzahlungsklausel',
     haufeIndex: 'HI223072',
     changeType: 'Publish',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '12/11/2025',
     status: 'scheduled',
     originalTemplateId: '9d2f6b41-8a3c-4e2a-b1f7-5c6e9a0d2b18',
@@ -85,7 +87,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Fahrtkostenzuschuss, Vereinbarung',
     haufeIndex: 'HI887609',
     changeType: 'Publish',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '09/10/2025',
     status: 'published',
     originalTemplateId: '22a998c8-4b12-421a-9ac9-482c9934e0b1',
@@ -96,7 +98,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Abmahnung, Verstoß gegen Betriebsordnung',
     haufeIndex: 'HI430099',
     changeType: 'Publish',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '04/10/2025',
     status: 'published',
     originalTemplateId: '7e1c4a9d-2f5b-4d8e-9a3c-6b1e8d4f2c07',
@@ -107,7 +109,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Zwischenzeugnis',
     haufeIndex: 'HI230943',
     changeType: 'Update',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '12/09/2025',
     status: 'scheduled',
     originalTemplateId: 'b4d8f2a6-1c9e-4a7b-8d3f-2e6c9a1b5f43',
@@ -118,7 +120,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Datenschutz, Einwilligungserklärung Mitarbeiterfoto',
     haufeIndex: 'HI998032',
     changeType: 'Update',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '01/09/2025',
     status: 'discarded',
     originalTemplateId: 'f3a7c1e9-6d2b-4f8a-9c1e-3b7d5a2f8e64',
@@ -129,7 +131,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Urlaubsantrag, Formular',
     haufeIndex: 'HI871109',
     changeType: 'Import',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '11/08/2025',
     status: 'published',
     originalTemplateId: 'c9e2b6a4-3f8d-4c1a-b7e9-4d2a8f6c1b39',
@@ -140,7 +142,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Krankmeldung, Bescheinigung',
     haufeIndex: 'HI092123',
     changeType: 'Publish',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '31/07/2025',
     status: 'published',
     originalTemplateId: 'a6d1e4c8-9b3f-4e2a-8c6d-1f9a3e7b2c85',
@@ -151,7 +153,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Homeoffice-Vereinbarung, Widerrufsvorbehalt',
     haufeIndex: 'HI220011',
     changeType: 'Update',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '22/07/2025',
     status: 'published',
     originalTemplateId: 'e8b3d6f1-4a9c-4d7e-b2f8-6c1a9d4e3b72',
@@ -162,7 +164,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Abmahnung wegen Pflichtverletzung',
     haufeIndex: 'HI986534',
     changeType: 'Publish',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '07/07/2025',
     status: 'published',
     originalTemplateId: 'd4f9a2c7-8e1b-4c6d-9a3f-7b2e8d1c4f56',
@@ -173,7 +175,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Kündigungsschreiben, ordentliche Kündigung durch Arbeitgeber',
     haufeIndex: 'HI200145',
     changeType: 'Publish',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '05/06/2025',
     status: 'published',
     originalTemplateId: '1c8e4b7a-3d6f-4a9c-8b2e-5d7a1c9f4e38',
@@ -184,7 +186,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Zeugnis, qualifiziertes Arbeitszeugnis',
     haufeIndex: 'HI201087',
     changeType: 'Import',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '18/05/2025',
     status: 'published',
     originalTemplateId: '6f2a9d4e-7c1b-4f8a-9d3e-2b6c8a1f4d95',
@@ -195,7 +197,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Aufhebungsvertrag',
     haufeIndex: 'HI201933',
     changeType: 'Update',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '06/05/2025',
     status: 'discarded',
     originalTemplateId: '3e9c6a1d-8b4f-4e2a-9c7d-1f3a8e6c2b47',
@@ -206,7 +208,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Elternzeit, Antrag auf Elternzeit',
     haufeIndex: 'HI202410',
     changeType: 'Publish',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '24/04/2025',
     status: 'published',
     originalTemplateId: '8a4d2f6c-1e9b-4a3f-8d6c-4b1e9a2f6d73',
@@ -217,7 +219,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Mutterschutz, Mitteilung über Schwangerschaft',
     haufeIndex: 'HI202588',
     changeType: 'Publish',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '16/04/2025',
     status: 'published',
     originalTemplateId: '5b7e1c9a-4f8d-4c2a-9e6b-3d8f1a4c7e29',
@@ -228,7 +230,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Abfindungsvereinbarung',
     haufeIndex: 'HI203041',
     changeType: 'Update',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '02/04/2025',
     status: 'scheduled',
     originalTemplateId: '9c3f6b8e-2d4a-4f7c-8b1e-6a9d3f2c8e54',
@@ -239,7 +241,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Datenschutzerklärung für Bewerber',
     haufeIndex: 'HI203377',
     changeType: 'Import',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '20/03/2025',
     status: 'published',
     originalTemplateId: '2f8d4a6c-9e1b-4d7a-8c3f-5b9e2d6a1f47',
@@ -250,7 +252,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Nebenabrede zum Arbeitsvertrag',
     haufeIndex: 'HI203802',
     changeType: 'Publish',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '08/03/2025',
     status: 'discarded',
     originalTemplateId: '4d9a7c2e-6f1b-4a8d-9c2e-7b4f1a8d6c93',
@@ -261,7 +263,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Versetzungsschreiben',
     haufeIndex: 'HI204119',
     changeType: 'Publish',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '27/02/2025',
     status: 'published',
     originalTemplateId: '7a1e9c4f-3b6d-4e8a-9f2c-1d6a9e4c7b58',
@@ -272,7 +274,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Probezeitverlängerung, Vereinbarung',
     haufeIndex: 'HI204456',
     changeType: 'Update',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '13/02/2025',
     status: 'published',
     originalTemplateId: '6c2b8f4a-9d1e-4c7b-8a3f-2e9c6b4a8d15',
@@ -283,7 +285,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Betriebsvereinbarung, Mustervorlage',
     haufeIndex: 'HI204890',
     changeType: 'Publish',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '01/02/2025',
     status: 'published',
     originalTemplateId: '8f4c1a9e-6b3d-4f2a-9e8c-4a1f9c6e3b72',
@@ -294,7 +296,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Gleitzeitvereinbarung',
     haufeIndex: 'HI205223',
     changeType: 'Update',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '21/01/2025',
     status: 'published',
     originalTemplateId: '3a9d6f2c-8e4b-4a1d-9c6f-2b8e4a9d1c56',
@@ -305,7 +307,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Sabbatical, Vereinbarung über unbezahlten Sonderurlaub',
     haufeIndex: 'HI205601',
     changeType: 'Publish',
-    changeReason: 'Legal Update',
+    changeReason: 'Legal change',
     changeDate: '09/01/2025',
     status: 'scheduled',
     originalTemplateId: '1e6c9a4f-7d2b-4e8a-9f4c-6a1e9d4c7b83',
@@ -316,7 +318,7 @@ const SEED_ROWS: SeedRow[] = [
     templateName: 'Dienstwagenüberlassungsvertrag',
     haufeIndex: 'HI205944',
     changeType: 'Import',
-    changeReason: 'Other',
+    changeReason: 'Manually created',
     changeDate: '02/01/2025',
     status: 'published',
     originalTemplateId: '9d4a2f6c-1b8e-4d3a-9c7f-2e6a4d9f1c58',
@@ -341,12 +343,17 @@ export const CHANGE_LOG_ENTRIES: ChangeLogEntry[] = SEED_ROWS.map((row, index) =
     folder: row.folder,
   }
 
-  if (row.changeReason === 'Legal Update') {
+  if (row.changeReason === 'Legal change') {
+    // A discarded change never went out, so no notification was ever sent —
+    // everything else in this seed data was scheduled or published, which
+    // did go through the "Send Notification" step.
+    const sendNotification = row.status !== 'discarded'
     return {
       ...base,
       source: 'Content hub',
       legalUpdate: LEGAL_UPDATE_TEXT,
-      changeNotification: CHANGE_NOTIFICATION_TEXT,
+      sendNotification,
+      ...(sendNotification && { changeNotification: CHANGE_NOTIFICATION_TEXT }),
     }
   }
 

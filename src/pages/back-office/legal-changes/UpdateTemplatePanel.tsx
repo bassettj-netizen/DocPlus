@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   ButtonPrimary,
   ButtonTertiary,
@@ -56,6 +57,27 @@ export default function UpdateTemplatePanel({
 }: UpdateTemplatePanelProps) {
   const update = (patch: Partial<UpdateDraft>) => onDraftChange({ ...draft, ...patch })
 
+  const [showTemplateIdError, setShowTemplateIdError] = useState(false)
+
+  // Reset validation state each time the panel opens for a (possibly
+  // different) change, rather than carrying a stale error into a fresh
+  // session — adjusted during render rather than in an effect, per
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes.
+  const [wasVisible, setWasVisible] = useState(visible)
+  if (visible !== wasVisible) {
+    setWasVisible(visible)
+    if (visible) setShowTemplateIdError(false)
+  }
+
+  const handleSave = () => {
+    if (!draft.updatedTemplateId.trim()) {
+      setShowTemplateIdError(true)
+      return
+    }
+    setShowTemplateIdError(false)
+    onSave()
+  }
+
   return (
     <Panel
       visible={visible}
@@ -68,7 +90,7 @@ export default function UpdateTemplatePanel({
         content: (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, width: '100%' }}>
             <ButtonTertiary onClick={onClose}>Cancel</ButtonTertiary>
-            <ButtonPrimary onClick={onSave}>Save</ButtonPrimary>
+            <ButtonPrimary onClick={handleSave}>Save</ButtonPrimary>
           </div>
         ),
       }}
@@ -87,7 +109,12 @@ export default function UpdateTemplatePanel({
             label="Updated HRD template ID"
             placeholder="Insert text"
             value={draft.updatedTemplateId}
-            onChange={(event) => update({ updatedTemplateId: event.target.value })}
+            onChange={(event) => {
+              update({ updatedTemplateId: event.target.value })
+              if (event.target.value.trim()) setShowTemplateIdError(false)
+            }}
+            isRequired
+            error={showTemplateIdError ? 'Enter an updated HRD template ID.' : undefined}
           />
 
           <Input
@@ -110,13 +137,13 @@ export default function UpdateTemplatePanel({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <DatePicker
               name="update-date"
-              label="Update date"
+              label="Publish date"
               placeholder="DD/MM/YYYY"
               value={draft.updateDate}
               onChange={(date) => update({ updateDate: date ?? undefined })}
             />
             <HelperLine>
-              The update date corresponds to the day the template will appear on HR Dokumente.
+              The publish date corresponds to the day the template will appear on HR Dokumente.
             </HelperLine>
           </div>
 
