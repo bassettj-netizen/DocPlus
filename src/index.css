@@ -15,3 +15,29 @@ body {
   width: 100%;
   min-height: 100svh;
 }
+
+/* GOAT-UI renders table headers uppercase at 12px; the Back Office designs
+   (Legal Changes, Change Log, Updates) use sentence case at the standard
+   14px body size. The extra ancestor class outweighs the design system's
+   own `.goat-table-small .goat-table-thead>tr>th`. Sortable columns wrap
+   their label in their own `.goat-table-column-title` span with an explicit
+   font-size, which doesn't inherit from the `th` — so it needs its own rule
+   too, or only unsortable headers (e.g. Template Name) would end up larger
+   than the rest. */
+.back-office-table .goat-table-wrapper .goat-table-thead > tr > th,
+.back-office-table .goat-table-wrapper .goat-table-thead > tr > th .goat-table-column-title {
+  text-transform: none;
+  font-size: 14px;
+}
+
+/* Row cells are one line only — the table's container has a bounded width,
+   so once nowrap content is wider than its column's share, the browser
+   compresses that cell rather than the table growing, letting this ellipsis
+   actually show. Pair with a Tooltip in the cell's own render for the
+   columns (Template Name) long enough to actually truncate. */
+.back-office-table .goat-table-tbody > tr > td.goat-table-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+}

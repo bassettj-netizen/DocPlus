@@ -15,6 +15,14 @@ const groups = [
       { label: 'Approvals 5', path: '/bulk-approvals/approvals-5' },
     ],
   },
+  {
+    title: 'Back Office',
+    items: [
+      { label: 'Legal Changes', path: '/back-office/legal-changes' },
+      { label: 'Change Log', path: '/back-office/change-log' },
+      { label: 'Updates', path: '/back-office/updates' },
+    ],
+  },
 ]
 
 export default function MenuPage() {

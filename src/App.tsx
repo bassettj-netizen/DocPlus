@@ -23,6 +23,9 @@ import Approvals2 from './pages/bulk-approvals/Approvals2'
 import Approvals3 from './pages/bulk-approvals/Approvals3'
 import Approvals4 from './pages/bulk-approvals/Approvals4'
 import Approvals5 from './pages/bulk-approvals/Approvals5'
+import LegalChanges from './pages/back-office/LegalChanges'
+import ChangeLog from './pages/back-office/ChangeLog'
+import Updates from './pages/back-office/Updates'
 
 function AppShell() {
   const navigate = useNavigate()
@@ -98,6 +101,12 @@ function App() {
         <Route path="/bulk-approvals/approvals-3/*" element={<Approvals3 />} />
         <Route path="/bulk-approvals/approvals-4/*" element={<Approvals4 />} />
         <Route path="/bulk-approvals/approvals-5/*" element={<Approvals5 />} />
+
+        {/* Back Office screens likewise own their full chrome per the Figma
+            design, so they sit alongside AppShell rather than inside it. */}
+        <Route path="/back-office/legal-changes/*" element={<LegalChanges />} />
+        <Route path="/back-office/change-log/*" element={<ChangeLog />} />
+        <Route path="/back-office/updates/*" element={<Updates />} />
       </Routes>
     </ThemeProvider>
   )
