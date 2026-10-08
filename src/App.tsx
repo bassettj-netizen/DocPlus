@@ -18,6 +18,8 @@ import BulkApprovalsV3 from './pages/bulk-approvals/Version3'
 import BulkApprovalsV4 from './pages/bulk-approvals/Version4'
 import BulkApprovalsV5 from './pages/bulk-approvals/Version5'
 import BulkApprovalsV6 from './pages/bulk-approvals/Version6'
+import BulkApprovalsV7 from './pages/bulk-approvals/Version7'
+import BulkApprovalsV8 from './pages/bulk-approvals/Version8'
 import Approvals1 from './pages/bulk-approvals/Approvals1'
 import Approvals2 from './pages/bulk-approvals/Approvals2'
 import Approvals3 from './pages/bulk-approvals/Approvals3'
@@ -96,6 +98,8 @@ function App() {
         <Route path="/bulk-approvals/version-4/*" element={<BulkApprovalsV4 />} />
         <Route path="/bulk-approvals/version-5/*" element={<BulkApprovalsV5 />} />
         <Route path="/bulk-approvals/version-6/*" element={<BulkApprovalsV6 />} />
+        <Route path="/bulk-approvals/version-7/*" element={<BulkApprovalsV7 />} />
+        <Route path="/bulk-approvals/version-8/*" element={<BulkApprovalsV8 />} />
         <Route path="/bulk-approvals/approvals-1/*" element={<Approvals1 />} />
         <Route path="/bulk-approvals/approvals-2/*" element={<Approvals2 />} />
         <Route path="/bulk-approvals/approvals-3/*" element={<Approvals3 />} />
