@@ -25,6 +25,15 @@ const groups = [
       { label: 'Updates', path: '/back-office/updates' },
     ],
   },
+  {
+    title: 'In-app notifications',
+    items: [
+      { label: 'Notifications popover', path: '/in-app-notifications/version-1' },
+      { label: 'Quick mark as read', path: '/in-app-notifications/version-2' },
+      { label: 'Select to mark as read', path: '/in-app-notifications/version-3' },
+      { label: 'Mark as read button', path: '/in-app-notifications/version-4' },
+    ],
+  },
 ]
 
 export default function MenuPage() {

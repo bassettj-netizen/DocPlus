@@ -41,3 +41,56 @@ body {
   text-overflow: ellipsis;
   max-width: 0;
 }
+
+/* The installed GOAT-UI Segmented has no full-width option (that `width`
+   prop arrives in v25), but the In-app notifications popover's All / Unread
+   switch spans the whole panel with two equal options. */
+.notifications-segmented .goat-segmented {
+  display: flex;
+  width: 100%;
+}
+
+.notifications-segmented .goat-segmented-group {
+  width: 100%;
+}
+
+.notifications-segmented .goat-segmented-item {
+  flex: 1;
+}
+
+/* Each option's label is a flex row, so its text is centred with
+   justify-content rather than text-align. */
+.notifications-segmented .goat-segmented-item-label {
+  justify-content: center;
+}
+
+/* The In-app notifications design uses a navy side menu ("sidemenu-base",
+   with "sidemenu-darken-2" for the active item and the line under the
+   logo). GOAT-UI's dark sidebar takes its colour from the theme's primary
+   (blue) and has no colour option, so it is recoloured here — scoped by id
+   to that prototype's sidebar only. The DS sets these colours with
+   !important, so the overrides have to as well. */
+#in-app-notifications-sidebar,
+#in-app-notifications-sidebar .goat-menu,
+#in-app-notifications-sidebar .goat-layout-sider-trigger {
+  background-color: #2f384a !important;
+}
+
+#in-app-notifications-sidebar .goat-layout-sider-children > :first-child {
+  border-bottom-color: #03111f !important;
+}
+
+#in-app-notifications-sidebar .goat-menu-item:hover {
+  background-color: #3f4e73 !important;
+}
+
+#in-app-notifications-sidebar .goat-menu-item.goat-menu-item-selected {
+  background-color: #03111f !important;
+}
+
+/* In-app notifications (Select to mark as read): each row's checkbox has a
+   visually hidden label for screen readers, but GOAT-UI still pads the label
+   8px either side, which pushed the checkbox away from the unread dot. */
+.notification-select .goat-checkbox-wrapper > span:last-child {
+  padding: 0;
+}

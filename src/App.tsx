@@ -28,6 +28,10 @@ import Approvals5 from './pages/bulk-approvals/Approvals5'
 import LegalChanges from './pages/back-office/LegalChanges'
 import ChangeLog from './pages/back-office/ChangeLog'
 import Updates from './pages/back-office/Updates'
+import InAppNotificationsV1 from './pages/in-app-notifications/Version1'
+import InAppNotificationsV2 from './pages/in-app-notifications/Version2'
+import InAppNotificationsV3 from './pages/in-app-notifications/Version3'
+import InAppNotificationsV4 from './pages/in-app-notifications/Version4'
 
 function AppShell() {
   const navigate = useNavigate()
@@ -111,6 +115,11 @@ function App() {
         <Route path="/back-office/legal-changes/*" element={<LegalChanges />} />
         <Route path="/back-office/change-log/*" element={<ChangeLog />} />
         <Route path="/back-office/updates/*" element={<Updates />} />
+
+        <Route path="/in-app-notifications/version-1/*" element={<InAppNotificationsV1 />} />
+        <Route path="/in-app-notifications/version-2/*" element={<InAppNotificationsV2 />} />
+        <Route path="/in-app-notifications/version-3/*" element={<InAppNotificationsV3 />} />
+        <Route path="/in-app-notifications/version-4/*" element={<InAppNotificationsV4 />} />
       </Routes>
     </ThemeProvider>
   )
