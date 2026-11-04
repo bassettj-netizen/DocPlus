@@ -68,24 +68,38 @@ body {
    with "sidemenu-darken-2" for the active item and the line under the
    logo). GOAT-UI's dark sidebar takes its colour from the theme's primary
    (blue) and has no colour option, so it is recoloured here — scoped by id
-   to that prototype's sidebar only. The DS sets these colours with
+   to that prototype's sidebar (and Archiving's, which uses the same menu). The DS sets these colours with
    !important, so the overrides have to as well. */
 #in-app-notifications-sidebar,
 #in-app-notifications-sidebar .goat-menu,
-#in-app-notifications-sidebar .goat-layout-sider-trigger {
+#in-app-notifications-sidebar .goat-layout-sider-trigger,
+#archiving-sidebar,
+#archiving-sidebar .goat-menu,
+#archiving-sidebar .goat-layout-sider-trigger {
   background-color: #2f384a !important;
 }
 
-#in-app-notifications-sidebar .goat-layout-sider-children > :first-child {
+#in-app-notifications-sidebar .goat-layout-sider-children > :first-child,
+#archiving-sidebar .goat-layout-sider-children > :first-child {
   border-bottom-color: #03111f !important;
 }
 
-#in-app-notifications-sidebar .goat-menu-item:hover {
+#in-app-notifications-sidebar .goat-menu-item:hover,
+#archiving-sidebar .goat-menu-item:hover {
   background-color: #3f4e73 !important;
 }
 
-#in-app-notifications-sidebar .goat-menu-item.goat-menu-item-selected {
+#in-app-notifications-sidebar .goat-menu-item.goat-menu-item-selected,
+#archiving-sidebar .goat-menu-item.goat-menu-item-selected {
   background-color: #03111f !important;
+}
+
+/* Archiving editor: top-right toasts sit 24px from the top by default, on
+   top of the header's Save / Export / Archive buttons. While an editor is
+   open (body.archiving-editor, set by EditorLayout) they start just below
+   the 64px navy bar instead, as in the Figma. */
+body.archiving-editor .goat-notification-topRight {
+  top: 80px !important;
 }
 
 /* In-app notifications (Select to mark as read): each row's checkbox has a

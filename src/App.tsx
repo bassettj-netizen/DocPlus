@@ -32,6 +32,16 @@ import InAppNotificationsV1 from './pages/in-app-notifications/Version1'
 import InAppNotificationsV2 from './pages/in-app-notifications/Version2'
 import InAppNotificationsV3 from './pages/in-app-notifications/Version3'
 import InAppNotificationsV4 from './pages/in-app-notifications/Version4'
+import ArchivingV1 from './pages/archiving/Version1'
+import ArchivingV2 from './pages/archiving/Version2'
+import ArchivingV3 from './pages/archiving/Version3'
+import ArchivingV4 from './pages/archiving/Version4'
+import ArchivingV5 from './pages/archiving/Version5'
+import ArchivingV6 from './pages/archiving/Version6'
+import ArchivingV7 from './pages/archiving/Version7'
+import ArchivingV8 from './pages/archiving/Version8'
+import ArchivingV9 from './pages/archiving/Version9'
+import ArchivingV10 from './pages/archiving/Version10'
 
 function AppShell() {
   const navigate = useNavigate()
@@ -120,6 +130,17 @@ function App() {
         <Route path="/in-app-notifications/version-2/*" element={<InAppNotificationsV2 />} />
         <Route path="/in-app-notifications/version-3/*" element={<InAppNotificationsV3 />} />
         <Route path="/in-app-notifications/version-4/*" element={<InAppNotificationsV4 />} />
+
+        <Route path="/archiving/version-1/*" element={<ArchivingV1 />} />
+        <Route path="/archiving/version-2/*" element={<ArchivingV2 />} />
+        <Route path="/archiving/version-3/*" element={<ArchivingV3 />} />
+        <Route path="/archiving/version-4/*" element={<ArchivingV4 />} />
+        <Route path="/archiving/version-5/*" element={<ArchivingV5 />} />
+        <Route path="/archiving/version-6/*" element={<ArchivingV6 />} />
+        <Route path="/archiving/version-7/*" element={<ArchivingV7 />} />
+        <Route path="/archiving/version-8/*" element={<ArchivingV8 />} />
+        <Route path="/archiving/version-9/*" element={<ArchivingV9 />} />
+        <Route path="/archiving/version-10/*" element={<ArchivingV10 />} />
       </Routes>
     </ThemeProvider>
   )

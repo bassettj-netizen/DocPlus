@@ -34,6 +34,21 @@ const groups = [
       { label: 'Mark as read button', path: '/in-app-notifications/version-4' },
     ],
   },
+  {
+    title: 'Archiving',
+    items: [
+      { label: 'Archive button', path: '/archiving/version-1' },
+      { label: 'Finish button', path: '/archiving/version-2' },
+      { label: 'Bottom toolbar', path: '/archiving/version-3' },
+      { label: 'Export then archive', path: '/archiving/version-4' },
+      { label: 'No setup steps', path: '/archiving/version-5' },
+      { label: 'Finish when saved', path: '/archiving/version-6' },
+      { label: 'Archive with export', path: '/archiving/version-7' },
+      { label: 'Done or archive', path: '/archiving/version-8' },
+      { label: 'Finished header', path: '/archiving/version-9' },
+      { label: 'Auto-archive on Done', path: '/archiving/version-10' },
+    ],
+  },
 ]
 
 export default function MenuPage() {
