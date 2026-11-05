@@ -18,6 +18,18 @@ export default function useDocumentEditor(documentId: string | undefined) {
       setFields(next)
       setDirty(true)
     },
+    /** Throws away unsaved changes, back to the last saved fields. */
+    reset() {
+      setFields(doc?.fields ?? emptyFields(doc?.name ?? ''))
+      setDirty(false)
+    },
+    /** Saves the fields as a new version of this document (see the store's createVersion); returns its id. */
+    saveAsNewVersion() {
+      if (!doc) return undefined
+      const id = store.createVersion(doc.id, fields)
+      setDirty(false)
+      return id
+    },
     save() {
       if (!doc) return
       store.save(doc.id, fields)
@@ -29,10 +41,10 @@ export default function useDocumentEditor(documentId: string | undefined) {
       store.finish(doc.id)
       setDirty(false)
     },
-    archive() {
+    archive(folder?: string) {
       if (!doc) return
       store.save(doc.id, fields)
-      store.archive(doc.id)
+      store.archive(doc.id, folder)
       setDirty(false)
     },
   }

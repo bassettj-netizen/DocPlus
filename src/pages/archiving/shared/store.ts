@@ -5,8 +5,8 @@ import type { DocumentFields } from './fields'
 // Same minimal module-level store + pub/sub as the other prototypes, but
 // built by a factory: each Archiving version gets its own documents, so
 // archiving something in one version doesn't change the other.
-export function createArchivingStore({ completedSeeds = false } = {}) {
-  let documents: HrdDocument[] = createSeedDocuments({ completed: completedSeeds })
+export function createArchivingStore({ completedSeeds = false, sharedSeeds = false } = {}) {
+  let documents: HrdDocument[] = createSeedDocuments({ completed: completedSeeds, shared: sharedSeeds })
   const listeners = new Set<() => void>()
 
   const update = (next: HrdDocument[]) => {
@@ -44,12 +44,36 @@ export function createArchivingStore({ completedSeeds = false } = {}) {
       update(documents.map((doc) => (doc.id === id ? { ...doc, fields, name: fields.title || doc.name, modifiedAt: new Date(), unsaved: false } : doc)))
     },
 
+    /** Saves edits to an archived document as a new, unarchived version of it, named "… (Copy)" — the archived one is left as it was. Returns the new id. */
+    createVersion(id: string, fields: DocumentFields) {
+      const source = documents.find((doc) => doc.id === id)
+      if (!source) return undefined
+      const root = source.versionOf ?? source.id
+      const latest = Math.max(...documents.filter((doc) => (doc.versionOf ?? doc.id) === root).map((doc) => doc.version ?? 1))
+      const now = new Date()
+      // A copy of a copy is still just "(Copy)", not "(Copy) (Copy)".
+      const name = `${(fields.title || source.name).replace(/ \(Copy\)$/, '')} (Copy)`
+      const doc: HrdDocument = {
+        id: newDocumentId(),
+        name,
+        employeeId: source.employeeId,
+        templateId: source.templateId,
+        createdAt: now,
+        modifiedAt: now,
+        fields: { ...fields, title: name },
+        version: latest + 1,
+        versionOf: root,
+      }
+      update([doc, ...documents])
+      return doc.id
+    },
+
     finish(id: string) {
       update(documents.map((doc) => (doc.id === id ? { ...doc, finishedAt: new Date() } : doc)))
     },
 
-    archive(id: string) {
-      update(documents.map((doc) => (doc.id === id ? { ...doc, archivedAt: new Date() } : doc)))
+    archive(id: string, folder?: string) {
+      update(documents.map((doc) => (doc.id === id ? { ...doc, archivedAt: new Date(), ...(folder && { archiveFolder: folder }) } : doc)))
     },
   }
 }

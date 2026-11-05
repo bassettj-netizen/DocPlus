@@ -13,7 +13,7 @@ const { colorPalette } = constants
 type DocumentsTab = 'mine' | 'shared' | 'archived'
 
 /** The "Archived • dd/mm/yyyy" chip from the Figma Documents list, or "Personio • dd/mm/yyyy" where the version names the system. */
-function ArchivedChip({ date, label = 'Archived' }: { date: Date; label?: string }) {
+export function ArchivedChip({ date, label = 'Archived' }: { date: Date; label?: string }) {
   return <Chip label={`${label} • ${formatDate(date)}`} chipStyle={chipStyles.SEMANTIC_SUCCESS} leftIcon={iconType.CheckCircleOutlined} uppercase />
 }
 
@@ -45,7 +45,7 @@ function DocumentStatus({ doc }: { doc: HrdDocument }) {
   )
 }
 
-function DocumentsCreated({ count }: { count: number }) {
+export function DocumentsCreated({ count }: { count: number }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
       <div style={{ width: 72, height: 6, borderRadius: 3, backgroundColor: colorPalette.blue.lighten4, overflow: 'hidden' }}>

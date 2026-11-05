@@ -47,6 +47,8 @@ const groups = [
       { label: 'Done or archive', path: '/archiving/version-8' },
       { label: 'Finished header', path: '/archiving/version-9' },
       { label: 'Auto-archive on Done', path: '/archiving/version-10' },
+      { label: 'Open and archived', path: '/archiving/version-11' },
+      { label: 'Export panel', path: '/archiving/version-12' },
     ],
   },
 ]

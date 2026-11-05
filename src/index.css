@@ -97,8 +97,9 @@ body {
 /* Archiving editor: top-right toasts sit 24px from the top by default, on
    top of the header's Save / Export / Archive buttons. While an editor is
    open (body.archiving-editor, set by EditorLayout) they start just below
-   the 64px navy bar instead, as in the Figma. */
-body.archiving-editor .goat-notification-topRight {
+   the 64px navy bar instead, as in the Figma. Versions that want them in
+   the screen's top-right corner instead add body.archiving-toasts-corner. */
+body.archiving-editor:not(.archiving-toasts-corner) .goat-notification-topRight {
   top: 80px !important;
 }
 
