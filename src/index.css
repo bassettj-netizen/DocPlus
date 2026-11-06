@@ -94,6 +94,24 @@ body {
   background-color: #03111f !important;
 }
 
+/* Archiving's Documents group (Individual / Mass creation, Version 13): as
+   in the Figma bulk flow, the open group sits on a darker rounded panel
+   (sampled from the screenshot) instead of the DS's blue "selected parent"
+   fill; only the chosen sub-item gets the darkest fill. */
+#archiving-sidebar .goat-menu-submenu-open,
+#archiving-sidebar .goat-menu-submenu-selected {
+  background-color: #202938 !important;
+  border-radius: 8px;
+}
+
+#archiving-sidebar .goat-menu-submenu .goat-menu-sub {
+  background-color: transparent !important;
+}
+
+#archiving-sidebar .goat-menu-submenu-title:hover {
+  background-color: #3f4e73 !important;
+}
+
 /* Archiving editor: top-right toasts sit 24px from the top by default, on
    top of the header's Save / Export / Archive buttons. While an editor is
    open (body.archiving-editor, set by EditorLayout) they start just below

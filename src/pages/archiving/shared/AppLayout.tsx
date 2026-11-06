@@ -24,8 +24,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         label: 'Documents',
         icon: <Icon type={iconType.ArticleFilled} />,
         children: [
-          { key: 'individual', label: 'Individual', onClick: () => navigate(`${basePath}/documents`) },
-          { key: 'mass-creation', label: 'Mass creation', onClick: () => navigate(`${basePath}/bulk`) },
+          // Icons as in the Figma bulk flow's side menu.
+          { key: 'individual', label: 'Individual', icon: <Icon type={iconType.NoteSendFilled} />, onClick: () => navigate(`${basePath}/documents`) },
+          { key: 'mass-creation', label: 'Mass creation', icon: <Icon type={iconType.LayersVerFilled} />, onClick: () => navigate(`${basePath}/bulk`) },
         ],
       }
     : { key: 'documents', label: 'Documents', icon: <Icon type={iconType.ArticleFilled} />, onClick: () => navigate(`${basePath}/documents`) }
