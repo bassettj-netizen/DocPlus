@@ -8,9 +8,11 @@ interface CreateFlowFooterProps {
   onBack?: () => void
   onContinue: () => void
   continueDisabled: boolean
+  /** "Continue" by default. */
+  continueLabel?: string
 }
 
-export default function CreateFlowFooter({ step, onBack, onContinue, continueDisabled }: CreateFlowFooterProps) {
+export default function CreateFlowFooter({ step, onBack, onContinue, continueDisabled, continueLabel = 'Continue' }: CreateFlowFooterProps) {
   const { stepsToolbar } = useArchivingVersion()
   return (
     <FlowToolbar
@@ -18,7 +20,7 @@ export default function CreateFlowFooter({ step, onBack, onContinue, continueDis
       center={stepsToolbar && <FlowSteps current={step} />}
       right={
         <ButtonPrimary disabled={continueDisabled} onClick={onContinue}>
-          Continue
+          {continueLabel}
         </ButtonPrimary>
       }
     />

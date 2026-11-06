@@ -1,4 +1,5 @@
 import { Chip, chipStyles, Collapsible, Icon, iconType, Input, RadioGroup, radioGroupDirection, Select, Typography } from '@goat-ui/goat-ui-core'
+import type { ReactNode } from 'react'
 import { sectionCounts, type DocumentFields } from './fields'
 
 const HEADER_FOOTER_OPTIONS = [
@@ -31,11 +32,18 @@ interface DocumentFormProps {
   onChange: (fields: DocumentFields) => void
   /** Archived or finished documents can't be edited until the user clicks Edit. */
   readOnly: boolean
+  /** A bulk document: the heading and description change, and the employee's name comes from each employee's master data. */
+  bulk?: boolean
+  /** Shown above the heading, e.g. the bulk documents explainer. */
+  banner?: ReactNode
 }
 
+const FROM_MASTER_DATA = 'Filled in from each employee’s master data'
+
 // The editor's "Document editor" column.
-export default function DocumentForm({ fields, onChange, readOnly }: DocumentFormProps) {
-  const counts = sectionCounts(fields)
+export default function DocumentForm({ fields, onChange, readOnly, bulk = false, banner }: DocumentFormProps) {
+  // In a bulk document the name fields are always filled — per employee, from their master data.
+  const counts = sectionCounts(bulk ? { ...fields, firstName: '-', lastName: '-' } : fields)
   const set = <K extends keyof DocumentFields>(key: K, value: DocumentFields[K]) => onChange({ ...fields, [key]: value })
 
   const input = (key: keyof DocumentFields, label: string, placeholder = 'Enter number') => (
@@ -49,11 +57,15 @@ export default function DocumentForm({ fields, onChange, readOnly }: DocumentFor
     />
   )
 
+  const nameInput = (key: 'firstName' | 'lastName', label: string) =>
+    bulk ? <Input name={key} label={label} placeholder="From employee data" value="" helper={FROM_MASTER_DATA} disabled /> : input(key, label, 'Enter text')
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 24 }}>
+      {banner}
       <div>
         <Typography size="base-lg" weight="semibold">
-          Document editor
+          {bulk ? 'Bulk document creation editor' : 'Document editor'}
         </Typography>
         <Typography color="neutral-darken2">
           Select the structure that best suits the requirements of your document and fill in the variable fields.
@@ -115,8 +127,8 @@ export default function DocumentForm({ fields, onChange, readOnly }: DocumentFor
                 children: (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 16 }}>
                     {input('employer', 'Arbeitgeber', 'Enter text')}
-                    {input('firstName', 'Vorname Arbeitnehmerin', 'Enter text')}
-                    {input('lastName', 'Nachname Arbeitnehmerin', 'Enter text')}
+                    {nameInput('firstName', 'Vorname Arbeitnehmerin')}
+                    {nameInput('lastName', 'Nachname Arbeitnehmerin')}
                   </div>
                 ),
               },

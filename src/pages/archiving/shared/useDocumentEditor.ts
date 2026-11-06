@@ -41,6 +41,13 @@ export default function useDocumentEditor(documentId: string | undefined) {
       store.finish(doc.id)
       setDirty(false)
     },
+    /** Bulk documents: saves, then archives the copies for these employees. */
+    archiveFor(employeeIds: string[], folder: string) {
+      if (!doc) return
+      store.save(doc.id, fields)
+      store.archiveFor(doc.id, employeeIds, folder)
+      setDirty(false)
+    },
     archive(folder?: string) {
       if (!doc) return
       store.save(doc.id, fields)

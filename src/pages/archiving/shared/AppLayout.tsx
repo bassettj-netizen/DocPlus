@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { avatarSizeEnum, Icon, iconType, Layout, Sidebar } from '@goat-ui/goat-ui-core'
 import type { SidebarItem } from '@goat-ui/goat-ui-core'
 import haufeWordmark from '../../../assets/haufe-wordmark.svg'
@@ -11,12 +11,28 @@ import { useArchivingVersion } from './version'
 // prototype; the other items are decorative.
 export default function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
-  const { basePath } = useArchivingVersion()
+  const location = useLocation()
+  const { basePath, massCreation } = useArchivingVersion()
   const [collapsed, setCollapsed] = useState(false)
+  // Versions with Mass creation split Documents into its two lists.
+  const inBulk = location.pathname.startsWith(`${basePath}/bulk`)
+  const activeKey = massCreation ? (inBulk ? 'mass-creation' : 'individual') : 'documents'
+
+  const documentsItem = massCreation
+    ? {
+        key: 'documents',
+        label: 'Documents',
+        icon: <Icon type={iconType.ArticleFilled} />,
+        children: [
+          { key: 'individual', label: 'Individual', onClick: () => navigate(`${basePath}/documents`) },
+          { key: 'mass-creation', label: 'Mass creation', onClick: () => navigate(`${basePath}/bulk`) },
+        ],
+      }
+    : { key: 'documents', label: 'Documents', icon: <Icon type={iconType.ArticleFilled} />, onClick: () => navigate(`${basePath}/documents`) }
 
   const topItems = [
     { key: 'home', label: 'Home', icon: <Icon type={iconType.HouseFilled} />, onClick: () => {} },
-    { key: 'documents', label: 'Documents', icon: <Icon type={iconType.ArticleFilled} />, onClick: () => navigate(`${basePath}/documents`) },
+    documentsItem,
     { key: 'admin', label: 'Admin', icon: <Icon type={iconType.LockFilled} />, onClick: () => {} },
   ] as unknown as SidebarItem[]
 
@@ -47,7 +63,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           onCollapsedChange={setCollapsed}
           topItems={topItems}
           bottomItems={bottomItems}
-          activeKeys={['documents']}
+          activeKeys={[activeKey]}
+          defaultOpenKeys={massCreation ? ['documents'] : []}
           logoProps={{
             label: 'HR Dokumente',
             src: <img src={hrdLogo} alt="" width={32} height={32} />,

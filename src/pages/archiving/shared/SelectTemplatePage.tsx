@@ -22,14 +22,21 @@ const FOLDERS: { key: Folder; label: string }[] = [
   { key: 'haufe', label: 'Haufe' },
 ]
 
+interface SelectTemplatePageProps {
+  /** Mass creation: Create makes the bulk document instead (the employees are in its ?employees= list). */
+  bulk?: boolean
+}
+
 // Step 2 of creating a document, as on the Figma "Select a template" screen.
 // Continue creates the draft and opens it in the editor.
-export default function SelectTemplatePage() {
+export default function SelectTemplatePage({ bulk = false }: SelectTemplatePageProps) {
   const navigate = useNavigate()
   const store = useArchivingStore()
   const { basePath } = useArchivingVersion()
   const [searchParams] = useSearchParams()
   const employeeId = searchParams.get('employee')
+  const employeeIds = searchParams.get('employees')?.split(',').filter(Boolean) ?? []
+  const listPath = bulk ? `${basePath}/bulk` : `${basePath}/documents`
   const [folder, setFolder] = useState<Folder>('overview')
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string>()
@@ -43,6 +50,11 @@ export default function SelectTemplatePage() {
   }, [folder, search, sort])
 
   const handleContinue = () => {
+    if (bulk) {
+      if (!employeeIds.length || !selectedId) return
+      navigate(`${basePath}/bulk/${store.createBulkDocument(employeeIds, selectedId)}`)
+      return
+    }
     if (!employeeId || !selectedId) return
     navigate(`${basePath}/documents/${store.createDocument(employeeId, selectedId)}`)
   }
@@ -51,11 +63,11 @@ export default function SelectTemplatePage() {
     <AppLayout>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 16, padding: 16, backgroundColor: colorPalette.neutral.lighten5 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
-          <ButtonGhost leftIcon={iconType.ChevronLeftOutlined} onClick={() => navigate(`${basePath}/documents`)}>
+          <ButtonGhost leftIcon={iconType.ChevronLeftOutlined} onClick={() => navigate(listPath)}>
             Back to documents
           </ButtonGhost>
           <Typography as="h1" size="heading-lg" weight="bold" color="neutral-darken5">
-            Select a template
+            {bulk ? 'Select a template to start your document' : 'Select a template'}
           </Typography>
         </div>
 
@@ -162,8 +174,11 @@ export default function SelectTemplatePage() {
           <div style={{ position: 'sticky', bottom: 0, marginBottom: -16, paddingBottom: 16, backgroundColor: colorPalette.neutral.lighten5 }}>
             <CreateFlowFooter
               step={1}
-              onBack={() => navigate(`${basePath}/new/employee?employee=${employeeId ?? ''}`)}
-              continueDisabled={!selectedId || !employeeId}
+              onBack={() =>
+                navigate(bulk ? `${basePath}/bulk/new/employees?employees=${employeeIds.join(',')}` : `${basePath}/new/employee?employee=${employeeId ?? ''}`)
+              }
+              continueDisabled={!selectedId || (bulk ? !employeeIds.length : !employeeId)}
+              continueLabel={bulk ? 'Create' : undefined}
               onContinue={handleContinue}
             />
           </div>

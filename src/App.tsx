@@ -44,6 +44,7 @@ import ArchivingV9 from './pages/archiving/Version9'
 import ArchivingV10 from './pages/archiving/Version10'
 import ArchivingV11 from './pages/archiving/Version11'
 import ArchivingV12 from './pages/archiving/Version12'
+import ArchivingV13 from './pages/archiving/Version13'
 
 function AppShell() {
   const navigate = useNavigate()
@@ -145,6 +146,7 @@ function App() {
         <Route path="/archiving/version-10/*" element={<ArchivingV10 />} />
         <Route path="/archiving/version-11/*" element={<ArchivingV11 />} />
         <Route path="/archiving/version-12/*" element={<ArchivingV12 />} />
+        <Route path="/archiving/version-13/*" element={<ArchivingV13 />} />
       </Routes>
     </ThemeProvider>
   )

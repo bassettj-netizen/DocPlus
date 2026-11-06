@@ -29,7 +29,7 @@ function Owner({ doc }: { doc: HrdDocument }) {
 const DELETION_WARNING_DAYS = 7
 
 /** When an archived document leaves HR Dokumente: the date, or a warning chip with the days left in the last week. */
-function DeletionDate({ archivedAt }: { archivedAt: Date }) {
+export function DeletionDate({ archivedAt }: { archivedAt: Date }) {
   const { deletesAt, daysLeft } = archiveDeletion(archivedAt)
   const remaining = daysLeft === 0 ? 'Today' : `In ${daysLeft} day${daysLeft === 1 ? '' : 's'}`
   if (daysLeft <= DELETION_WARNING_DAYS) {
@@ -56,8 +56,9 @@ function employeeOf(doc: HrdDocument) {
 export default function DocumentsPage() {
   const navigate = useNavigate()
   const { basePath } = useArchivingVersion()
-  // New documents are only listed once they've been saved.
-  const documents = useDocuments().filter((doc) => !doc.unsaved)
+  // New documents are only listed once they've been saved. Bulk documents
+  // (Version 13's Mass creation) have their own list.
+  const documents = useDocuments().filter((doc) => !doc.unsaved && !doc.employeeIds)
   const [searchParams, setSearchParams] = useSearchParams()
   const tab: DocumentsTab = searchParams.get('tab') === 'archived' ? 'archived' : 'open'
   const [search, setSearch] = useState('')

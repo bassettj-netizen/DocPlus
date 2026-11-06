@@ -20,11 +20,13 @@ interface EditorLayoutProps {
   /** A toolbar along the bottom of the screen, under the form and preview. */
   footer?: ReactNode
   children?: ReactNode
+  /** Where Back to documents goes; the Documents list by default. */
+  backPath?: string
 }
 
 // The document editor from the Figma flows: navy top bar, icon rail, the
 // 440px fields column, and the A4 preview.
-export default function EditorLayout({ title, actions, form, footer, children }: EditorLayoutProps) {
+export default function EditorLayout({ title, actions, form, footer, children, backPath }: EditorLayoutProps) {
   const navigate = useNavigate()
   const { basePath } = useArchivingVersion()
   const [view, setView] = useState<string | number>('Editor view')
@@ -48,7 +50,7 @@ export default function EditorLayout({ title, actions, form, footer, children }:
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: colorPalette.white }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 16, backgroundColor: '#2f384a', flexShrink: 0 }}>
         <div style={{ flex: 1 }}>
-          <ButtonGhost onClick={() => navigate(`${basePath}/documents`)}>
+          <ButtonGhost onClick={() => navigate(backPath ?? `${basePath}/documents`)}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: colorPalette.neutral.lighten5 }}>
               <Icon type={iconType.ChevronLeftOutlined} color="neutral-lighten5" size={16} />
               Back to documents

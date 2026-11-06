@@ -199,6 +199,61 @@ export interface HrdDocument {
   version?: number
   /** The id of the first version, shared by every later version of the same document. */
   versionOf?: string
+  /** A bulk document (Mass creation): the employees it's created for, one copy each. `employeeId` is the first of them. */
+  employeeIds?: string[]
+  /** A bulk document's copies archived so far, by employee. `archivedAt` is only set once every copy is archived. */
+  archivedFor?: Record<string, { at: Date; folder: string }>
+}
+
+/** How many of a bulk document's copies are archived. */
+export function archivedCount(doc: HrdDocument) {
+  return Object.keys(doc.archivedFor ?? {}).length
+}
+
+const DAY = 24 * 60 * 60 * 1000
+
+// The Mass creation list's starting documents: one open, one with some
+// copies archived, one fully archived.
+export function createBulkSeedDocuments(): HrdDocument[] {
+  const seed = (name: string, employeeIds: string[], templateId: string, date: Date, extra: Partial<HrdDocument> = {}): HrdDocument => ({
+    id: newDocumentId(),
+    name,
+    employeeId: employeeIds[0],
+    employeeIds,
+    templateId,
+    createdAt: date,
+    modifiedAt: date,
+    fields: {
+      title: name,
+      coverLetter: 'no',
+      gender: 'female',
+      employer: 'Docplus',
+      firstName: '',
+      lastName: '',
+      requestedBy: 'employer',
+      total: '',
+      costCoverage: '',
+      tuition: '',
+      continuedPay: '',
+      travel: '',
+    },
+    ...extra,
+  })
+  const tenDaysAgo = new Date(Date.now() - 10 * DAY)
+  return [
+    seed('Urlaub, Hinweis auf Verfall 2026', ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8'], 't6', new Date(2026, 9, 20)),
+    seed('Arbeitsvertrag, befristet ohne Sachgrund – Q4', ['e2', 'e4', 'e7', 'e9', 'e10'], 't5', new Date(2026, 9, 13), {
+      archivedFor: {
+        e2: { at: new Date(Date.now() - 2 * DAY), folder: 'Verträge' },
+        e4: { at: new Date(Date.now() - 2 * DAY), folder: 'Verträge' },
+      },
+    }),
+    seed('Fortbildungsvertrag mit Rückzahlungsklausel', ['e3', 'e6', 'e8', 'e9'], 't10', new Date(2026, 8, 28), {
+      archivedAt: tenDaysAgo,
+      archiveFolder: 'Weiterbildung',
+      archivedFor: Object.fromEntries(['e3', 'e6', 'e8', 'e9'].map((id) => [id, { at: tenDaysAgo, folder: 'Weiterbildung' }])),
+    }),
+  ]
 }
 
 let nextId = 1

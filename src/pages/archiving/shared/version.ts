@@ -15,6 +15,8 @@ export interface ArchivingVersion {
   statusColumn?: boolean
   /** The No setup steps design skips picking an employee and template: New document opens the editor on this pair straight away. */
   newDocument?: { employeeId: string; templateId: string }
+  /** The Bulk export design splits Documents into Individual and Mass creation in the side menu. */
+  massCreation?: boolean
 }
 
 export const ArchivingVersionContext = createContext<ArchivingVersion>({ basePath: '/archiving/version-1', archivedTab: false })
