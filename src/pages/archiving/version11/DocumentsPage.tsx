@@ -3,9 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Banner, bannerStyles, bannerVariants, ButtonPrimary, Chip, chipStyles, chipVariants, constants, iconType, SearchBar, Table, Tabs, Toggle, Tooltip, Typography } from '@goat-ui/goat-ui-core'
 import type { TableColumnsType } from '@goat-ui/goat-ui-core'
 import AppLayout from '../shared/AppLayout'
-import { ARCHIVE_RETENTION_DAYS, ARCHIVE_SYSTEM, archiveDeletion, EMPLOYEES, employeeName, formatDate, type HrdDocument } from '../shared/data'
+import { ARCHIVE_RETENTION_DAYS, ARCHIVE_SYSTEM, archiveDeletion, GENERIC_ARCHIVE_SYSTEM, EMPLOYEES, employeeName, formatDate, type HrdDocument } from '../shared/data'
 import { ArchivedChip, DocumentsCreated } from '../shared/DocumentsPage'
 import { useDocuments } from '../shared/store'
+import { UpgradeDot, UpgradeModal } from '../shared/Upgrade'
 import { useArchivingVersion } from '../shared/version'
 
 const { colorPalette } = constants
@@ -31,10 +32,12 @@ const DELETION_WARNING_DAYS = 7
 /** When an archived document leaves HR Dokumente: the date, or a warning chip with the days left in the last week. */
 export function DeletionDate({ archivedAt }: { archivedAt: Date }) {
   const { deletesAt, daysLeft } = archiveDeletion(archivedAt)
+  const { genericArchiveSystem, scheduledDeletion } = useArchivingVersion()
+  const system = genericArchiveSystem ? GENERIC_ARCHIVE_SYSTEM : ARCHIVE_SYSTEM
   const remaining = daysLeft === 0 ? 'Today' : `In ${daysLeft} day${daysLeft === 1 ? '' : 's'}`
   if (daysLeft <= DELETION_WARNING_DAYS) {
     return (
-      <Tooltip title={`Deleted from HR Dokumente on ${formatDate(deletesAt)}. The copy in ${ARCHIVE_SYSTEM} stays.`}>
+      <Tooltip title={`${scheduledDeletion ? 'Will be deleted' : 'Deleted'} from HR Dokumente on ${formatDate(deletesAt)}. The copy in ${system} stays.`}>
         <span>
           <Chip label={remaining} chipStyle={chipStyles.SEMANTIC_WARNING} leftIcon={iconType.InfoCircleOutlined} uppercase />
         </span>
@@ -55,14 +58,17 @@ function employeeOf(doc: HrdDocument) {
 // either tab alongside their own, told apart by the Owner column.
 export default function DocumentsPage() {
   const navigate = useNavigate()
-  const { basePath } = useArchivingVersion()
+  const { basePath, genericArchiveSystem, searchNameOnly, largeListDescription, scheduledDeletion, archiving, noSharing, noEmployee } = useArchivingVersion()
+  const archiveSystem = genericArchiveSystem ? GENERIC_ARCHIVE_SYSTEM : ARCHIVE_SYSTEM
   // New documents are only listed once they've been saved. Bulk documents
   // (Version 13's Mass creation) have their own list.
   const documents = useDocuments().filter((doc) => !doc.unsaved && !doc.employeeIds)
   const [searchParams, setSearchParams] = useSearchParams()
-  const tab: DocumentsTab = searchParams.get('tab') === 'archived' ? 'archived' : 'open'
+  // Versions 14 and 15 (no archiving): only ever the open documents.
+  const tab: DocumentsTab = !archiving && searchParams.get('tab') === 'archived' ? 'archived' : 'open'
   const [search, setSearch] = useState('')
   const [bulkEdit, setBulkEdit] = useState(false)
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
 
   const open = (doc: HrdDocument) => navigate(`${basePath}/documents/${doc.id}`)
 
@@ -70,7 +76,7 @@ export default function DocumentsPage() {
   const archivedDocuments = documents.filter((doc) => doc.archivedAt)
   const query = search.trim().toLowerCase()
   const rows = (tab === 'archived' ? archivedDocuments : openDocuments).filter(
-    (doc) => !query || doc.name.toLowerCase().includes(query) || employeeOf(doc).toLowerCase().includes(query),
+    (doc) => !query || doc.name.toLowerCase().includes(query) || (!searchNameOnly && employeeOf(doc).toLowerCase().includes(query)),
   )
 
   const columns: TableColumnsType<HrdDocument> = [
@@ -83,8 +89,8 @@ export default function DocumentsPage() {
         </button>
       ),
     },
-    { title: 'Employee', key: 'employee', width: 170, render: (_, doc) => employeeOf(doc) },
-    { title: 'Owner', key: 'owner', width: 210, render: (_, doc) => <Owner doc={doc} /> },
+    ...(noEmployee ? [] : [{ title: 'Employee', key: 'employee', width: 170, render: (_: unknown, doc: HrdDocument) => employeeOf(doc) }]),
+    ...(noSharing ? [] : [{ title: 'Owner', key: 'owner', width: 210, render: (_: unknown, doc: HrdDocument) => <Owner doc={doc} /> }]),
     ...(tab === 'archived'
       ? [
           {
@@ -94,7 +100,7 @@ export default function DocumentsPage() {
             render: (_: unknown, doc: HrdDocument) => (doc.archivedAt ? <ArchivedChip date={doc.archivedAt} label={ARCHIVE_SYSTEM} /> : '-'),
           },
           {
-            title: 'Deleted on',
+            title: scheduledDeletion ? 'Scheduled deletion' : 'Deleted on',
             key: 'deletes',
             width: 200,
             render: (_: unknown, doc: HrdDocument) => (doc.archivedAt ? <DeletionDate archivedAt={doc.archivedAt} /> : '-'),
@@ -114,43 +120,56 @@ export default function DocumentsPage() {
             <Typography as="h1" size="heading-lg" weight="bold" color="neutral-darken5">
               Choose a new or existing document
             </Typography>
-            <ButtonPrimary onClick={() => navigate(`${basePath}/new/employee`)}>New document</ButtonPrimary>
+            <ButtonPrimary onClick={() => navigate(`${basePath}/new/${noEmployee ? 'template' : 'employee'}`)}>New document</ButtonPrimary>
           </div>
 
-          <Tabs
-            activeKey={tab}
-            onChange={(key: string) => {
-              setSearchParams(key === 'open' ? {} : { tab: key })
-              setSearch('')
-            }}
-            options={[
-              { key: 'open', label: `Open (${openDocuments.length})`, content: null },
-              { key: 'archived', label: `Archived (${archivedDocuments.length})`, content: null },
-            ]}
-          />
+          {/* Version 15 has no tabs; Version 14's Archived tab carries the upgrade dot and opens the upgrade dialog. */}
+          {archiving !== 'none' && (
+            <Tabs
+              activeKey={tab}
+              onChange={(key: string) => {
+                if (key === 'archived' && archiving === 'upgrade') {
+                  setUpgradeOpen(true)
+                  return
+                }
+                setSearchParams(key === 'open' ? {} : { tab: key })
+                setSearch('')
+              }}
+              options={[
+                { key: 'open', label: `Open (${openDocuments.length})`, content: null },
+                archiving === 'upgrade'
+                  ? { key: 'archived', label: <UpgradeDot>Archived</UpgradeDot>, content: null }
+                  : { key: 'archived', label: `Archived (${archivedDocuments.length})`, content: null },
+              ]}
+            />
+          )}
 
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, padding: 16, borderRadius: 16, backgroundColor: colorPalette.white }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <Typography as="span" size="heading-md" weight="semibold">
-                  {TAB_TITLES[tab]}
+                  {archiving === 'none' ? 'My documents' : TAB_TITLES[tab]}
                 </Typography>
-                <Typography as="span" size="base-sm" color="neutral-darken2">
+                <Typography as="span" size={largeListDescription ? 'base' : 'base-sm'} color="neutral-darken2">
                   {tab === 'archived'
-                    ? `Filed in the employee’s personnel file in ${ARCHIVE_SYSTEM}. Includes documents shared with you.`
-                    : 'Documents you or your colleagues are still working on. Includes documents shared with you.'}
+                    ? `Filed in the employee’s personnel file in ${archiveSystem}. Includes documents shared with you.`
+                    : noSharing
+                      ? 'Documents you’re still working on.'
+                      : archiving === 'none'
+                      ? 'Documents you or your colleagues are working on. Includes documents shared with you.'
+                      : 'Documents you or your colleagues are still working on. Includes documents shared with you.'}
                 </Typography>
               </div>
               <Toggle checked={bulkEdit} onChange={setBulkEdit}>
                 Bulk edit
               </Toggle>
               <div style={{ width: 300 }}>
-                <SearchBar placeholder="Search by document or employee" value={search} onChange={setSearch} width="expanded" />
+                <SearchBar placeholder={searchNameOnly ? 'Search documents' : 'Search by document or employee'} value={search} onChange={setSearch} width="expanded" />
               </div>
             </div>
 
-            {/* The retention rule, stated once above the list; the Deleted on
-                column then gives each document's own date. */}
+            {/* The retention rule, stated once above the list; the Deleted on (Scheduled
+                deletion) column then gives each document's own date. */}
             {tab === 'archived' && (
               <Banner
                 variant={bannerVariants.INFO}
@@ -158,7 +177,7 @@ export default function DocumentsPage() {
                 dismissible={false}
                 icon={iconType.InfoCircleFilled}
                 header={`Archived documents are deleted from HR Dokumente ${ARCHIVE_RETENTION_DAYS} days after they’re archived`}
-                content={`The archived copy stays in the employee’s personnel file in ${ARCHIVE_SYSTEM}. Export a copy before then if you still need it here.`}
+                content={`The archived copy stays in the employee’s personnel file in ${archiveSystem}. Export a copy before then if you still need it here.`}
               />
             )}
 
@@ -175,7 +194,9 @@ export default function DocumentsPage() {
                   ? 'No documents match your search.'
                   : tab === 'archived'
                     ? 'No archived documents yet.'
-                    : 'No open documents. Create one with New document.',
+                    : archiving === 'none'
+                      ? 'No documents yet. Create one with New document.'
+                      : 'No open documents. Create one with New document.',
               }}
             />
 
@@ -184,6 +205,7 @@ export default function DocumentsPage() {
           </div>
         </div>
       </div>
+      {archiving === 'upgrade' && <UpgradeModal visible={upgradeOpen} onClose={() => setUpgradeOpen(false)} />}
     </AppLayout>
   )
 }

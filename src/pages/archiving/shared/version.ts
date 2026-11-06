@@ -17,6 +17,24 @@ export interface ArchivingVersion {
   newDocument?: { employeeId: string; templateId: string }
   /** The Bulk export design splits Documents into Individual and Mass creation in the side menu. */
   massCreation?: boolean
+  /** Users choose their HR system (Version 13): descriptions and hints say "your HR system" instead of naming it. */
+  genericArchiveSystem?: boolean
+  /** The Documents list's search matches the document name only, not the employee (Version 13). */
+  searchNameOnly?: boolean
+  /** The description under the Documents list's heading at base size rather than base-sm (Version 13). */
+  largeListDescription?: boolean
+  /** The deletion column reads "Scheduled deletion" (not "Deleted on") and its tooltip "Will be deleted…", so the date
+   *  reads as upcoming rather than past (Version 13). */
+  scheduledDeletion?: boolean
+  /** Versions 14 and 15: Version 13 for a plan without archiving. 'upgrade' keeps the archiving UI, marked with the
+   *  orange upgrade dot, and opens the upgrade dialog instead of archiving; 'none' leaves archiving out altogether. */
+  archiving?: 'upgrade' | 'none'
+  /** Version 14: sharing is an upgrade feature, so no documents are shared with the user — no Owner column, and the
+   *  list's description doesn't mention shared documents. */
+  noSharing?: boolean
+  /** Version 14: picking an employee is an upgrade feature — New document goes straight to the templates, the
+   *  Documents list has no Employee column, and individual documents are exported without one. */
+  noEmployee?: boolean
 }
 
 export const ArchivingVersionContext = createContext<ArchivingVersion>({ basePath: '/archiving/version-1', archivedTab: false })

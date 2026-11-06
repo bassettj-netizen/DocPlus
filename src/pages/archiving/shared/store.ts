@@ -5,11 +5,14 @@ import type { DocumentFields } from './fields'
 // Same minimal module-level store + pub/sub as the other prototypes, but
 // built by a factory: each Archiving version gets its own documents, so
 // archiving something in one version doesn't change the other.
-export function createArchivingStore({ completedSeeds = false, sharedSeeds = false, bulkSeeds = false } = {}) {
-  let documents: HrdDocument[] = [
+// `noArchives` (Versions 14 and 15, a plan without archiving): leaves out the seeds that are archived, and clears
+// the archived copies of the part-archived bulk document.
+export function createArchivingStore({ completedSeeds = false, sharedSeeds = false, bulkSeeds = false, noArchives = false } = {}) {
+  const seeds: HrdDocument[] = [
     ...createSeedDocuments({ completed: completedSeeds, shared: sharedSeeds }),
     ...(bulkSeeds ? createBulkSeedDocuments() : []),
   ]
+  let documents: HrdDocument[] = noArchives ? seeds.filter((doc) => !doc.archivedAt).map((doc) => ({ ...doc, archivedFor: undefined })) : seeds
   const listeners = new Set<() => void>()
 
   const update = (next: HrdDocument[]) => {

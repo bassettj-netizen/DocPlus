@@ -2,6 +2,10 @@ import type { DocumentFields } from './fields'
 
 export const ARCHIVE_SYSTEM = 'Personio'
 
+/** Version 13: users choose which HR system they archive to, so copy that explains archiving names it generically —
+ *  only statuses and actions that say where a document went (chips, "Archive in Personio") name the system. */
+export const GENERIC_ARCHIVE_SYSTEM = 'your HR system'
+
 /** The whole journey, from picking an employee to filing the document. */
 export const FLOW_STEPS = ['Employee', 'Template', 'Fill in', 'Export', 'Archive'] as const
 

@@ -4,6 +4,7 @@ import { avatarSizeEnum, Icon, iconType, Layout, Sidebar } from '@goat-ui/goat-u
 import type { SidebarItem } from '@goat-ui/goat-ui-core'
 import haufeWordmark from '../../../assets/haufe-wordmark.svg'
 import hrdLogo from '../../../assets/hrd-product-logo.svg'
+import { UpgradeDot, UpgradeModal } from './Upgrade'
 import { useArchivingVersion } from './version'
 
 // The HR Dokumente chrome around the Documents list and the create flow:
@@ -12,8 +13,9 @@ import { useArchivingVersion } from './version'
 export default function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { basePath, massCreation } = useArchivingVersion()
+  const { basePath, massCreation, archiving } = useArchivingVersion()
   const [collapsed, setCollapsed] = useState(false)
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
   // Versions with Mass creation split Documents into its two lists.
   const inBulk = location.pathname.startsWith(`${basePath}/bulk`)
   const activeKey = massCreation ? (inBulk ? 'mass-creation' : 'individual') : 'documents'
@@ -26,7 +28,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         children: [
           // Icons as in the Figma bulk flow's side menu.
           { key: 'individual', label: 'Individual', icon: <Icon type={iconType.NoteSendFilled} />, onClick: () => navigate(`${basePath}/documents`) },
-          { key: 'mass-creation', label: 'Mass creation', icon: <Icon type={iconType.LayersVerFilled} />, onClick: () => navigate(`${basePath}/bulk`) },
+          // Version 14: Mass creation is an upgrade feature too — the dot, and the upgrade dialog instead of the list.
+          archiving === 'upgrade'
+            ? { key: 'mass-creation', label: <UpgradeDot>Mass creation</UpgradeDot>, icon: <Icon type={iconType.LayersVerFilled} />, onClick: () => setUpgradeOpen(true) }
+            : { key: 'mass-creation', label: 'Mass creation', icon: <Icon type={iconType.LayersVerFilled} />, onClick: () => navigate(`${basePath}/bulk`) },
         ],
       }
     : { key: 'documents', label: 'Documents', icon: <Icon type={iconType.ArticleFilled} />, onClick: () => navigate(`${basePath}/documents`) }
@@ -38,6 +43,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   ] as unknown as SidebarItem[]
 
   const bottomItems = [
+    // Version 14: Upgrade above Settings, as in the live product, opening the upgrade dialog.
+    ...(archiving === 'upgrade' ? [{ key: 'upgrade', label: 'Upgrade', icon: <Icon type={iconType.CrownOutlined} />, onClick: () => setUpgradeOpen(true) }] : []),
     { key: 'settings', label: 'Settings', icon: <Icon type={iconType.GearOutlined} />, onClick: () => {} },
     { key: 'faq', label: 'FAQ', icon: <Icon type={iconType.HelpCircleOutlined} />, onClick: () => {} },
   ] as unknown as SidebarItem[]
@@ -74,6 +81,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       }
     >
       {children}
+      {archiving === 'upgrade' && <UpgradeModal visible={upgradeOpen} onClose={() => setUpgradeOpen(false)} />}
     </Layout>
   )
 }

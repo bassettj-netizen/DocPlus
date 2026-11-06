@@ -127,3 +127,16 @@ body.archiving-editor:not(.archiving-toasts-corner) .goat-notification-topRight 
 .notification-select .goat-checkbox-wrapper > span:last-child {
   padding: 0;
 }
+
+/* Archiving Version 14: the upgrade dot's badge keeps the label's own colour (e.g. white in the side menu). */
+.hrd-upgrade-dot > .goat-badge {
+  color: inherit;
+}
+
+/* The side menu clips its rows, which cut off the top of the upgrade dot: let rows that carry one overflow, so the
+   dot sits on top of the menu item as in the live product. */
+.goat-menu-item:has(.hrd-upgrade-dot),
+.goat-menu-title-content:has(> .hrd-upgrade-dot) {
+  /* !important: the menu's own (more specific) rule hides the label's overflow. */
+  overflow: visible !important;
+}

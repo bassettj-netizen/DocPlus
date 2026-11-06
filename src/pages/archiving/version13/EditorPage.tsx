@@ -23,6 +23,7 @@ import EditorLayout from '../shared/EditorLayout'
 import useDocumentEditor from '../shared/useDocumentEditor'
 import { useArchivingVersion } from '../shared/version'
 import ExportPanel from './ExportPanel'
+import { UpgradeDot, UpgradeModal } from '../shared/Upgrade'
 
 /** The Figma "Bulk documents" explainer at the top of the bulk editor. */
 function BulkBanner({ count }: { count: number }) {
@@ -61,8 +62,9 @@ export default function EditorPage({ bulk = false }: { bulk?: boolean }) {
 function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; bulk: boolean }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { basePath } = useArchivingVersion()
+  const { basePath, archiving } = useArchivingVersion()
   const { notification } = useNotifications()
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
   const editor = useDocumentEditor(documentId)
   useEffect(() => {
     document.body.classList.add('archiving-toasts-corner')
@@ -116,7 +118,7 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
   )
 
   const exportButton = unsaved ? (
-    <Tooltip title={archived ? 'Save as a new version to export' : 'Save your changes to export'} placement={tooltipPlacements.BOTTOM_RIGHT}>
+    <Tooltip title="Save your changes to export" placement={tooltipPlacements.BOTTOM_RIGHT}>
       <ButtonPrimary disabled>Export</ButtonPrimary>
     </Tooltip>
   ) : (
@@ -130,13 +132,28 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
     </ButtonPrimary>
   )
 
+  // Share sits just before Export and follows its rules: disabled, with the same kind of tooltip, while there are
+  // unsaved changes. A prototype: nothing is shared yet. Version 14: an upgrade feature — the dot, and the upgrade dialog.
+  const shareUpgrade = archiving === 'upgrade'
+  const shareButton = unsaved ? (
+    <Tooltip title="Save your changes to share" placement={tooltipPlacements.BOTTOM}>
+      <span>{shareUpgrade ? <UpgradeDot><ButtonSecondary disabled>Share</ButtonSecondary></UpgradeDot> : <ButtonSecondary disabled>Share</ButtonSecondary>}</span>
+    </Tooltip>
+  ) : shareUpgrade ? (
+    <UpgradeDot>
+      <ButtonSecondary onClick={() => setUpgradeOpen(true)}>Share</ButtonSecondary>
+    </UpgradeDot>
+  ) : (
+    <ButtonSecondary onClick={() => {}}>Share</ButtonSecondary>
+  )
+
   let actions
   if (archived && editing) {
     actions = (
       <>
         <ButtonSecondary onClick={cancelEditing}>Cancel</ButtonSecondary>
+        {/* No Share or Export while editing an archived document: they come back on the new version once it's saved. */}
         <ButtonSecondary onClick={saveAsNewVersion}>Save as new version</ButtonSecondary>
-        {exportButton}
       </>
     )
   } else if (archived) {
@@ -146,6 +163,7 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
         <ButtonSecondary leftIcon={iconType.EditOutlined} onClick={() => setEditing(true)}>
           Edit
         </ButtonSecondary>
+        {shareButton}
         {exportButton}
       </>
     )
@@ -161,6 +179,7 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
           </Tooltip>
         )}
         <ButtonSecondary onClick={save}>Save</ButtonSecondary>
+        {shareButton}
         {exportButton}
       </>
     )
@@ -187,6 +206,7 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
         onArchive={(employeeIds, folder) => (bulk ? editor.archiveFor(employeeIds, folder) : editor.archive(folder))}
         onClose={() => setExporting(false)}
       />
+      {shareUpgrade && <UpgradeModal visible={upgradeOpen} onClose={() => setUpgradeOpen(false)} />}
     </EditorLayout>
   )
 }

@@ -4,6 +4,8 @@ import {
   ButtonPrimary,
   ButtonSecondary,
   constants,
+  Chip,
+  chipStyles,
   Icon,
   iconType,
   Input,
@@ -15,7 +17,9 @@ import {
   Typography,
 } from '@goat-ui/goat-ui-core'
 import DocumentSummary from '../shared/DocumentSummary'
-import { ARCHIVE_FOLDERS, ARCHIVE_RETENTION_DAYS, ARCHIVE_SYSTEM, employeeName, type Employee } from '../shared/data'
+import { ARCHIVE_FOLDERS, ARCHIVE_RETENTION_DAYS, ARCHIVE_SYSTEM, employeeName, GENERIC_ARCHIVE_SYSTEM, type Employee } from '../shared/data'
+import { UpgradeModal } from '../shared/Upgrade'
+import { useArchivingVersion } from '../shared/version'
 
 const { colorPalette } = constants
 
@@ -68,7 +72,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
 }
 
 /** Version 12's bordered "choose, then act" box: title and description, the choices, then the button that acts on them. */
-function ActionBox({ title, description, children, action, status }: { title: string; description: string; children: ReactNode; action: ReactNode; status?: ReactNode }) {
+function ActionBox({ title, description, children, action, status }: { title: ReactNode; description: string; children: ReactNode; action: ReactNode; status?: ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 16, borderRadius: 8, border: `1px solid ${colorPalette.neutral.lighten2}` }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -81,6 +85,44 @@ function ActionBox({ title, description, children, action, status }: { title: st
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>{status}</div>
         {action}
+      </div>
+    </div>
+  )
+}
+
+/** Version 14: Archive isn't in this plan. Instead of a disabled form, a tinted card says so up front — "Upgrade"
+ *  chip with a crown, what archiving would save them, and one button into the upgrade dialog. */
+function ArchiveUpsell({ system, bulk, onUpgrade }: { system: string; bulk: boolean; onUpgrade: () => void }) {
+  const benefits = [
+    bulk ? 'File every employee’s copy in one go' : 'File documents straight into the personnel file',
+    'No more downloading and uploading by hand',
+    `Documents stay safe in ${system} after HR Dokumente clears them out`,
+  ]
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 16, borderRadius: 8, border: `1px solid ${colorPalette.blue.lighten4}`, backgroundColor: colorPalette.blue.lighten5 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <Typography weight="semibold">{`Archive in ${system}`}</Typography>
+          <Chip label="Upgrade" chipStyle={chipStyles.ACCENT_YELLOW} leftIcon={iconType.CrownOutlined} />
+        </span>
+        <Typography size="base-sm" color="neutral-darken2">
+          Archiving isn’t included in your plan. Upgrade to send documents to {system} straight from HR Dokumente.
+        </Typography>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {benefits.map((benefit) => (
+          <span key={benefit} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Icon type={iconType.CheckCircleFilled} color="success-base" size={16} />
+            <Typography as="span" size="base-sm">
+              {benefit}
+            </Typography>
+          </span>
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <ButtonSecondary leftIcon={iconType.RocketOutlined} onClick={onUpgrade}>
+          See upgrade options
+        </ButtonSecondary>
       </div>
     </div>
   )
@@ -128,7 +170,7 @@ const plural = (count: number, one: string, many = `${one}s`) => `${count} ${cou
 //   the hint shows the resulting name. Individual documents get this too.
 //
 // Archive files one document per employee, all together in the one
-// Personio folder chosen — a combined file only applies to the download.
+// HR system folder chosen — a combined file only applies to the download.
 // Copies already archived are skipped and counted.
 export default function ExportPanel({
   visible,
@@ -150,6 +192,9 @@ export default function ExportPanel({
   const [downloaded, setDownloaded] = useState<string>()
   const [archivedHere, setArchivedHere] = useState<number>()
 
+  // Version 14: individual documents have no employee, so nothing here depends on one.
+  const { noEmployee, genericArchiveSystem, archiving } = useArchivingVersion()
+  const withoutEmployee = !!noEmployee && !bulk
   const inScope = bulk && scope === 'selected' ? employees.filter((e) => selectedIds.includes(e.id)) : employees
   const toArchive = inScope.filter((e) => !archivedEmployeeIds.includes(e.id))
   const alreadyArchived = inScope.length - toArchive.length
@@ -158,7 +203,8 @@ export default function ExportPanel({
   const extension = EXTENSIONS[format]
   const name = fileName.trim()
   const combined = bulk && layout === 'combined'
-  const exampleFile = combined ? `${name}.${extension}` : `${inScope[0] ? employeeName(inScope[0]) : employeeName(employees[0])} – ${name}.${extension}`
+  const firstEmployee = inScope[0] ?? employees[0]
+  const exampleFile = combined || !firstEmployee ? `${name}.${extension}` : `${employeeName(firstEmployee)} – ${name}.${extension}`
 
   // Any change to what would be downloaded clears the last "Downloaded" note.
   const changed =
@@ -210,7 +256,23 @@ export default function ExportPanel({
     )
   }
 
-  const noneSelected = inScope.length === 0
+  const noneSelected = !withoutEmployee && inScope.length === 0
+  const nothingToArchive = !withoutEmployee && toArchive.length === 0
+  // Version 13: users choose their HR system, so the intro and description don't name it — the title and statuses still do.
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
+  const introSystem = genericArchiveSystem ? GENERIC_ARCHIVE_SYSTEM : ARCHIVE_SYSTEM
+  // Versions 14 and 15 (no archiving in the plan) only download.
+  const intro = archiving
+    ? bulk ? 'Download copies of the documents.' : 'Download a copy of the document.'
+    : bulk ? `Download copies, archive them in ${introSystem}, or both.` : `Download a copy, archive it in ${introSystem}, or both.`
+  const employeeLabel = employees[0] && !withoutEmployee ? employeeName(employees[0]) : 'the employee'
+  const archiveDescription = genericArchiveSystem
+    ? bulk
+      ? `File all documents together in the folder you choose. After ${ARCHIVE_RETENTION_DAYS} days, they’re deleted from HR Dokumente but stay in ${GENERIC_ARCHIVE_SYSTEM}.`
+      : `File it in ${employeeLabel}’s personnel file. After ${ARCHIVE_RETENTION_DAYS} days, it’s deleted from HR Dokumente but stays in ${GENERIC_ARCHIVE_SYSTEM}.`
+    : bulk
+      ? `All documents are filed together in the folder you choose in ${ARCHIVE_SYSTEM}. After ${ARCHIVE_RETENTION_DAYS} days they’re deleted from HR Dokumente; the copies in ${ARCHIVE_SYSTEM} stay.`
+      : `File it in ${employeeLabel}’s personnel file in ${ARCHIVE_SYSTEM}. After ${ARCHIVE_RETENTION_DAYS} days it’s deleted from HR Dokumente; the copy in ${ARCHIVE_SYSTEM} stays.`
   const title = bulk ? 'Export documents' : 'Export document'
 
   return (
@@ -241,7 +303,7 @@ export default function ExportPanel({
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
-        <Typography>{bulk ? `Download copies, archive them in ${ARCHIVE_SYSTEM}, or both.` : `Download a copy, archive it in ${ARCHIVE_SYSTEM}, or both.`}</Typography>
+        <Typography>{intro}</Typography>
 
         {bulk ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -271,7 +333,8 @@ export default function ExportPanel({
         ) : (
           <DocumentSummary
             rows={[
-              { label: 'Employee', value: employees[0] ? employeeName(employees[0]) : '', strong: true },
+              // Version 14: the document has no employee, so the row says so.
+              { label: 'Employee', value: withoutEmployee ? 'Undefined' : employees[0] ? employeeName(employees[0]) : '', strong: true },
               { label: 'Document', value: documentName },
             ]}
           />
@@ -327,22 +390,22 @@ export default function ExportPanel({
               onChange={(event) => changed(setFileName)(event.target.value)}
               error={name ? undefined : 'Enter a file name'}
               helperMaxLines={3}
-              helper={name && !combined ? `The employee’s name goes before the file name, e.g. “${exampleFile}”` : undefined}
+              helper={name && !combined && !withoutEmployee ? `The employee’s name goes before the file name, e.g. “${exampleFile}”` : undefined}
             />
           </ActionBox>
         </div>
 
+        {archiving !== 'none' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <SectionLabel>Archive</SectionLabel>
+          {archiving === 'upgrade' ? (
+            <ArchiveUpsell system={ARCHIVE_SYSTEM} bulk={bulk} onUpgrade={() => setUpgradeOpen(true)} />
+          ) : (
           <ActionBox
             title={`Archive in ${ARCHIVE_SYSTEM}`}
-            description={
-              bulk
-                ? `All documents are filed together in the folder you choose in ${ARCHIVE_SYSTEM}. After ${ARCHIVE_RETENTION_DAYS} days they’re deleted from HR Dokumente; the copies in ${ARCHIVE_SYSTEM} stay.`
-                : `File it in ${employees[0] ? employeeName(employees[0]) : 'the employee'}’s personnel file in ${ARCHIVE_SYSTEM}. After ${ARCHIVE_RETENTION_DAYS} days it’s deleted from HR Dokumente; the copy in ${ARCHIVE_SYSTEM} stays.`
-            }
+            description={archiveDescription}
             action={
-              <ButtonSecondary disabled={!folder || toArchive.length === 0} onClick={archive}>
+              <ButtonSecondary disabled={!folder || nothingToArchive} onClick={archive}>
                 {bulk && toArchive.length > 0 ? `Archive ${plural(toArchive.length, 'document')}` : 'Archive'}
               </ButtonSecondary>
             }
@@ -358,13 +421,16 @@ export default function ExportPanel({
               placeholder="Choose a folder"
               hasSearch
               // Locked once any copy is archived: the rest go in the same folder.
-              disabled={toArchive.length === 0 || archivedEmployeeIds.length > 0}
+              disabled={nothingToArchive || archivedEmployeeIds.length > 0}
               helper={bulk && archivedEmployeeIds.length > 0 && toArchive.length > 0 ? 'The remaining documents go in the same folder as those already archived' : undefined}
               helperMaxLines={2}
             />
           </ActionBox>
+          )}
         </div>
+        )}
       </div>
+      {archiving === 'upgrade' && <UpgradeModal visible={upgradeOpen} onClose={() => setUpgradeOpen(false)} />}
     </Panel>
   )
 }

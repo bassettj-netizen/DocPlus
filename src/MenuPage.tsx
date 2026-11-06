@@ -50,6 +50,8 @@ const groups = [
       { label: 'Open and archived', path: '/archiving/version-11' },
       { label: 'Export panel', path: '/archiving/version-12' },
       { label: 'Bulk export', path: '/archiving/version-13' },
+      { label: 'Archiving as upgrade', path: '/archiving/version-14' },
+      { label: 'No archiving', path: '/archiving/version-15' },
     ],
   },
 ]

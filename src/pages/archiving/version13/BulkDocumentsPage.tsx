@@ -3,9 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Banner, bannerStyles, bannerVariants, ButtonPrimary, Chip, chipStyles, constants, iconType, SearchBar, Table, Tabs, Tooltip, Typography } from '@goat-ui/goat-ui-core'
 import type { TableColumnsType } from '@goat-ui/goat-ui-core'
 import AppLayout from '../shared/AppLayout'
-import { ARCHIVE_RETENTION_DAYS, ARCHIVE_SYSTEM, archivedCount, EMPLOYEES, employeeName, formatDate, type HrdDocument } from '../shared/data'
+import { ARCHIVE_RETENTION_DAYS, ARCHIVE_SYSTEM, archivedCount, GENERIC_ARCHIVE_SYSTEM, EMPLOYEES, employeeName, formatDate, type HrdDocument } from '../shared/data'
 import { ArchivedChip } from '../shared/DocumentsPage'
 import { useDocuments } from '../shared/store'
+import { UpgradeDot, UpgradeModal } from '../shared/Upgrade'
 import { useArchivingVersion } from '../shared/version'
 import { DeletionDate } from '../version11/DocumentsPage'
 
@@ -39,11 +40,13 @@ function ArchiveProgress({ doc }: { doc: HrdDocument }) {
 // shows how far it's got.
 export default function BulkDocumentsPage() {
   const navigate = useNavigate()
-  const { basePath } = useArchivingVersion()
+  const { basePath, archiving } = useArchivingVersion()
   const documents = useDocuments().filter((doc) => doc.employeeIds && !doc.unsaved)
   const [searchParams, setSearchParams] = useSearchParams()
-  const tab: DocumentsTab = searchParams.get('tab') === 'archived' ? 'archived' : 'open'
+  // Versions 14 and 15 (no archiving): only ever the open documents.
+  const tab: DocumentsTab = !archiving && searchParams.get('tab') === 'archived' ? 'archived' : 'open'
   const [search, setSearch] = useState('')
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
 
   const open = (doc: HrdDocument) => navigate(`${basePath}/bulk/${doc.id}`)
 
@@ -72,14 +75,15 @@ export default function BulkDocumentsPage() {
             render: (_: unknown, doc: HrdDocument) => (doc.archivedAt ? <ArchivedChip date={doc.archivedAt} label={ARCHIVE_SYSTEM} /> : '-'),
           },
           {
-            title: 'Deleted on',
+            title: 'Scheduled deletion',
             key: 'deletes',
             width: 200,
             render: (_: unknown, doc: HrdDocument) => (doc.archivedAt ? <DeletionDate archivedAt={doc.archivedAt} /> : '-'),
           },
         ]
       : [
-          { title: 'Archived', key: 'progress', width: 170, render: (_: unknown, doc: HrdDocument) => <ArchiveProgress doc={doc} /> },
+          // Without archiving (Versions 14 and 15) there's no progress to show.
+          ...(archiving ? [] : [{ title: 'Archived', key: 'progress', width: 170, render: (_: unknown, doc: HrdDocument) => <ArchiveProgress doc={doc} /> }]),
           { title: 'Creation date', key: 'created', width: 125, render: (_: unknown, doc: HrdDocument) => formatDate(doc.createdAt) },
           { title: 'Last modified', key: 'modified', width: 125, render: (_: unknown, doc: HrdDocument) => formatDate(doc.modifiedAt) },
         ]),
@@ -96,28 +100,39 @@ export default function BulkDocumentsPage() {
             <ButtonPrimary onClick={() => navigate(`${basePath}/bulk/new/employees`)}>New bulk document</ButtonPrimary>
           </div>
 
-          <Tabs
-            activeKey={tab}
-            onChange={(key: string) => {
-              setSearchParams(key === 'open' ? {} : { tab: key })
-              setSearch('')
-            }}
-            options={[
-              { key: 'open', label: `Open (${openDocuments.length})`, content: null },
-              { key: 'archived', label: `Archived (${archivedDocuments.length})`, content: null },
-            ]}
-          />
+          {/* Version 15 has no tabs; Version 14's Archived tab carries the upgrade dot and opens the upgrade dialog. */}
+          {archiving !== 'none' && (
+            <Tabs
+              activeKey={tab}
+              onChange={(key: string) => {
+                if (key === 'archived' && archiving === 'upgrade') {
+                  setUpgradeOpen(true)
+                  return
+                }
+                setSearchParams(key === 'open' ? {} : { tab: key })
+                setSearch('')
+              }}
+              options={[
+                { key: 'open', label: `Open (${openDocuments.length})`, content: null },
+                archiving === 'upgrade'
+                  ? { key: 'archived', label: <UpgradeDot>Archived</UpgradeDot>, content: null }
+                  : { key: 'archived', label: `Archived (${archivedDocuments.length})`, content: null },
+              ]}
+            />
+          )}
 
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, padding: 16, borderRadius: 16, backgroundColor: colorPalette.white }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <Typography as="span" size="heading-md" weight="semibold">
-                  {tab === 'archived' ? 'Archived bulk documents' : 'Open bulk documents'}
+                  {archiving === 'none' ? 'Bulk documents' : tab === 'archived' ? 'Archived bulk documents' : 'Open bulk documents'}
                 </Typography>
-                <Typography as="span" size="base-sm" color="neutral-darken2">
+                <Typography as="span" size="base" color="neutral-darken2">
                   {tab === 'archived'
-                    ? `Every employee’s copy is filed in ${ARCHIVE_SYSTEM}, together in one folder.`
-                    : `One document, created for several employees. It moves to Archived once every employee’s copy is archived.`}
+                    ? `Each employee’s copy is filed in one shared folder in ${GENERIC_ARCHIVE_SYSTEM}.`
+                    : archiving
+                      ? 'One document, created for several employees.'
+                      : `One document, created for several employees. It moves to Archived once every employee’s copy is archived.`}
                 </Typography>
               </div>
               <div style={{ width: 300 }}>
@@ -132,7 +147,7 @@ export default function BulkDocumentsPage() {
                 dismissible={false}
                 icon={iconType.InfoCircleFilled}
                 header={`Archived documents are deleted from HR Dokumente ${ARCHIVE_RETENTION_DAYS} days after they’re archived`}
-                content={`The archived copies stay in their folder in ${ARCHIVE_SYSTEM}. Export them before then if you still need them here.`}
+                content={`The archived copies stay in their folder in ${GENERIC_ARCHIVE_SYSTEM}. Export them before then if you still need them here.`}
               />
             )}
 
@@ -149,12 +164,15 @@ export default function BulkDocumentsPage() {
                   ? 'No documents match your search.'
                   : tab === 'archived'
                     ? 'No archived bulk documents yet.'
-                    : 'No open bulk documents. Create one with New bulk document.',
+                    : archiving === 'none'
+                      ? 'No bulk documents yet. Create one with New bulk document.'
+                      : 'No open bulk documents. Create one with New bulk document.',
               }}
             />
           </div>
         </div>
       </div>
+      {archiving === 'upgrade' && <UpgradeModal visible={upgradeOpen} onClose={() => setUpgradeOpen(false)} />}
     </AppLayout>
   )
 }

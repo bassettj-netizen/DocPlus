@@ -32,7 +32,9 @@ interface SelectTemplatePageProps {
 export default function SelectTemplatePage({ bulk = false }: SelectTemplatePageProps) {
   const navigate = useNavigate()
   const store = useArchivingStore()
-  const { basePath } = useArchivingVersion()
+  const { basePath, noEmployee } = useArchivingVersion()
+  // Version 14: no employee step — a document is created from its template alone.
+  const withoutEmployee = noEmployee && !bulk
   const [searchParams] = useSearchParams()
   const employeeId = searchParams.get('employee')
   const employeeIds = searchParams.get('employees')?.split(',').filter(Boolean) ?? []
@@ -55,8 +57,8 @@ export default function SelectTemplatePage({ bulk = false }: SelectTemplatePageP
       navigate(`${basePath}/bulk/${store.createBulkDocument(employeeIds, selectedId)}`)
       return
     }
-    if (!employeeId || !selectedId) return
-    navigate(`${basePath}/documents/${store.createDocument(employeeId, selectedId)}`)
+    if ((!employeeId && !withoutEmployee) || !selectedId) return
+    navigate(`${basePath}/documents/${store.createDocument(employeeId ?? '', selectedId)}`)
   }
 
   return (
@@ -174,10 +176,13 @@ export default function SelectTemplatePage({ bulk = false }: SelectTemplatePageP
           <div style={{ position: 'sticky', bottom: 0, marginBottom: -16, paddingBottom: 16, backgroundColor: colorPalette.neutral.lighten5 }}>
             <CreateFlowFooter
               step={1}
-              onBack={() =>
-                navigate(bulk ? `${basePath}/bulk/new/employees?employees=${employeeIds.join(',')}` : `${basePath}/new/employee?employee=${employeeId ?? ''}`)
+              // Without an employee step, the first step has no Back (Back to documents is above).
+              onBack={
+                withoutEmployee
+                  ? undefined
+                  : () => navigate(bulk ? `${basePath}/bulk/new/employees?employees=${employeeIds.join(',')}` : `${basePath}/new/employee?employee=${employeeId ?? ''}`)
               }
-              continueDisabled={!selectedId || (bulk ? !employeeIds.length : !employeeId)}
+              continueDisabled={!selectedId || (bulk ? !employeeIds.length : !employeeId && !withoutEmployee)}
               continueLabel={bulk ? 'Create' : undefined}
               onContinue={handleContinue}
             />
