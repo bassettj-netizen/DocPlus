@@ -9,20 +9,20 @@ const HEADER_FOOTER_OPTIONS = [
 ]
 
 // Neutral while a section is untouched, green with a tick once anything is
-// filled in — as in the Figma editor.
-function SectionChip({ count, total }: { count: number; total: number }) {
+// filled in — as in the Figma editor. Disabled on an archived document, like its fields.
+function SectionChip({ count, total, disabled }: { count: number; total: number; disabled?: boolean }) {
   return count > 0 ? (
-    <Chip label={`${count}/${total}`} chipStyle={chipStyles.SEMANTIC_SUCCESS} leftIcon={iconType.CheckCircleFilled} />
+    <Chip label={`${count}/${total}`} chipStyle={chipStyles.SEMANTIC_SUCCESS} leftIcon={iconType.CheckCircleFilled} disabled={disabled} />
   ) : (
-    <Chip label={`${count}/${total}`} chipStyle={chipStyles.ACCENT_NEUTRAL} />
+    <Chip label={`${count}/${total}`} chipStyle={chipStyles.ACCENT_NEUTRAL} disabled={disabled} />
   )
 }
 
-function SectionHeader({ label, count, total }: { label: string; count: number; total: number }) {
+function SectionHeader({ label, count, total, disabled }: { label: string; count: number; total: number; disabled?: boolean }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 12 }}>
       <Typography>{label}</Typography>
-      <SectionChip count={count} total={total} />
+      <SectionChip count={count} total={total} disabled={disabled} />
     </div>
   )
 }
@@ -36,12 +36,14 @@ interface DocumentFormProps {
   bulk?: boolean
   /** Shown above the heading, e.g. the bulk documents explainer. */
   banner?: ReactNode
+  /** An archived document (read-only, not being edited): the section chips use the disabled style too (Versions 13–15). */
+  archived?: boolean
 }
 
 const FROM_MASTER_DATA = 'Filled in from each employee’s master data'
 
 // The editor's "Document editor" column.
-export default function DocumentForm({ fields, onChange, readOnly, bulk = false, banner }: DocumentFormProps) {
+export default function DocumentForm({ fields, onChange, readOnly, bulk = false, banner, archived = false }: DocumentFormProps) {
   // In a bulk document the name fields are always filled — per employee, from their master data.
   const counts = sectionCounts(bulk ? { ...fields, firstName: '-', lastName: '-' } : fields)
   const set = <K extends keyof DocumentFields>(key: K, value: DocumentFields[K]) => onChange({ ...fields, [key]: value })
@@ -123,7 +125,7 @@ export default function DocumentForm({ fields, onChange, readOnly, bulk = false,
             items={[
               {
                 key: 'intro',
-                header: <SectionHeader label="Intro" count={counts.intro} total={3} />,
+                header: <SectionHeader label="Intro" count={counts.intro} total={3} disabled={archived} />,
                 children: (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 16 }}>
                     {input('employer', 'Arbeitgeber', 'Enter text')}
@@ -134,7 +136,7 @@ export default function DocumentForm({ fields, onChange, readOnly, bulk = false,
               },
               {
                 key: 'requested-by',
-                header: <SectionHeader label="Auf wessen Wunsch erfolgt die Teilnahme an der Fortbildung?" count={counts.requestedBy} total={1} />,
+                header: <SectionHeader label="Auf wessen Wunsch erfolgt die Teilnahme an der Fortbildung?" count={counts.requestedBy} total={1} disabled={archived} />,
                 children: (
                   <div style={{ padding: 16 }}>
                     <RadioGroup
@@ -153,7 +155,7 @@ export default function DocumentForm({ fields, onChange, readOnly, bulk = false,
               },
               {
                 key: 'costs',
-                header: <SectionHeader label="Lehrgangskosten" count={counts.costs} total={5} />,
+                header: <SectionHeader label="Lehrgangskosten" count={counts.costs} total={5} disabled={archived} />,
                 children: (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 16 }}>
                     {input('total', 'Total')}

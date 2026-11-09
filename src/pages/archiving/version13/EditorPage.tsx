@@ -190,7 +190,7 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
       title={editor.fields.title || doc.name}
       actions={actions}
       backPath={listPath}
-      form={<DocumentForm fields={editor.fields} onChange={editor.change} readOnly={readOnly} bulk={bulk} banner={bulk && <BulkBanner count={employees.length} />} />}
+      form={<DocumentForm fields={editor.fields} onChange={editor.change} readOnly={readOnly} archived={archived && !editing} bulk={bulk} banner={bulk && <BulkBanner count={employees.length} />} />}
     >
       <ExportPanel
         key={exportKey}
