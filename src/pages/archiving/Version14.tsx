@@ -8,7 +8,7 @@ import EditorPage from './version13/EditorPage'
 import SelectEmployeesPage from './version13/SelectEmployeesPage'
 
 // Version 13's documents, without the archived ones or those shared with the user (sharing is an upgrade feature).
-const store = createArchivingStore({ completedSeeds: true, bulkSeeds: true, noArchives: true })
+const store = createArchivingStore({ completedSeeds: true, bulkSeeds: true, noArchives: true, distinctNames: true })
 const version = { basePath: '/archiving/version-14', archivedTab: false, hideUnsaved: true, massCreation: true, genericArchiveSystem: true, searchNameOnly: true, largeListDescription: true, scheduledDeletion: true, archiving: 'upgrade' as const, noSharing: true, noEmployee: true }
 
 // "Archiving as upgrade": Version 13 for a plan without archiving, with its

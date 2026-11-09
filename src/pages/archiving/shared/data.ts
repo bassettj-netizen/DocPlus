@@ -273,7 +273,11 @@ export function newDocumentId() {
 //
 // With `shared`, three documents colleagues shared with the user follow —
 // one of them already archived.
-export function createSeedDocuments({ completed = false, shared = false } = {}): HrdDocument[] {
+//
+// With `distinctNames` (Version 13), each document gets its own tidy name —
+// no repeats, no "[HI…] (Kopie 3)" suffixes — and a template to match it.
+export function createSeedDocuments({ completed = false, shared = false, distinctNames = false } = {}): HrdDocument[] {
+  const pick = <T,>(original: T, distinct: T) => (distinctNames ? distinct : original)
   const seed = (
     name: string,
     employeeId: string,
@@ -314,7 +318,7 @@ export function createSeedDocuments({ completed = false, shared = false } = {}):
     ? [
         seed('Befristeter Arbeitsvertrag ohne Sachgrund, Verlängerung', 'e1', 't8', new Date(2024, 5, 24), 'male', false, { sharedBy: 'Rachel Green' }),
         seed('Freistellungserklärung nach Kündigung des Arbeitsverhältnisses', 'e9', 't7', new Date(2024, 5, 14), 'male', true, { sharedBy: 'Jeremy Tull' }),
-        seed('Urlaub, Hinweis auf Verfall', 'e3', 't6', new Date(2024, 4, 28), 'male', false, {
+        seed(pick('Urlaub, Hinweis auf Verfall', 'Abrufarbeit, Rahmenvereinbarung'), 'e3', pick('t6', 't2'), new Date(2024, 4, 28), 'male', false, {
           sharedBy: 'Lucy Inkredible',
           // Archived 25 days ago, so it's close to being deleted from HR Dokumente.
           archivedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
@@ -322,10 +326,23 @@ export function createSeedDocuments({ completed = false, shared = false } = {}):
       ]
     : []
   return [
-    seed('Arbeitsvertrag für geringfügig Beschäftigte - [HI435662] (Kopie 3) 04-04-2024', 'e4', 't1', new Date(2024, 5, 21), 'female'),
+    seed(pick('Arbeitsvertrag für geringfügig Beschäftigte - [HI435662] (Kopie 3) 04-04-2024', 'Arbeitsvertrag, unbefristet'), 'e4', 't1', new Date(2024, 5, 21), 'female'),
     seed('Arbeitsvertrag für geringfügig Beschäftigte', 'e2', 't1', new Date(2024, 5, 19), 'female'),
-    seed('Arbeitsvertrag für geringfügig Beschäftigte - [HI435662] (Kopie 3) 04-04-2024', 'e5', 't1', new Date(2024, 5, 11), 'male', true),
-    seed('Mutterschutz: Unterrichtung konkretisierte Gefährdungsbeurteilung - [HI11335021]', 'e7', 't9', new Date(2024, 4, 4), 'female'),
+    seed(
+      pick('Arbeitsvertrag für geringfügig Beschäftigte - [HI435662] (Kopie 3) 04-04-2024', 'Arbeitsvertrag mit Werkstudenten, befristet ohne Sachgrund'),
+      'e5',
+      pick('t1', 't4'),
+      new Date(2024, 5, 11),
+      'male',
+      true,
+    ),
+    seed(
+      pick('Mutterschutz: Unterrichtung konkretisierte Gefährdungsbeurteilung - [HI11335021]', 'Mutterschutz, Unterrichtung konkretisierte Gefährdungsbeurteilung'),
+      'e7',
+      't9',
+      new Date(2024, 4, 4),
+      'female',
+    ),
     ...sharedDocuments,
   ]
 }

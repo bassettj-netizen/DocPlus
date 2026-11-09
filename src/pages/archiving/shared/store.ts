@@ -7,9 +7,10 @@ import type { DocumentFields } from './fields'
 // archiving something in one version doesn't change the other.
 // `noArchives` (Versions 14 and 15, a plan without archiving): leaves out the seeds that are archived, and clears
 // the archived copies of the part-archived bulk document.
-export function createArchivingStore({ completedSeeds = false, sharedSeeds = false, bulkSeeds = false, noArchives = false } = {}) {
+// `distinctNames` (Version 13): gives every seed document its own name.
+export function createArchivingStore({ completedSeeds = false, sharedSeeds = false, bulkSeeds = false, noArchives = false, distinctNames = false } = {}) {
   const seeds: HrdDocument[] = [
-    ...createSeedDocuments({ completed: completedSeeds, shared: sharedSeeds }),
+    ...createSeedDocuments({ completed: completedSeeds, shared: sharedSeeds, distinctNames }),
     ...(bulkSeeds ? createBulkSeedDocuments() : []),
   ]
   let documents: HrdDocument[] = noArchives ? seeds.filter((doc) => !doc.archivedAt).map((doc) => ({ ...doc, archivedFor: undefined })) : seeds

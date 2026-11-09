@@ -10,7 +10,7 @@ import SelectEmployeesPage from './version13/SelectEmployeesPage'
 
 // Version 12's documents, plus three bulk documents for Mass creation: one
 // open, one part-archived, one fully archived.
-const store = createArchivingStore({ completedSeeds: true, sharedSeeds: true, bulkSeeds: true })
+const store = createArchivingStore({ completedSeeds: true, sharedSeeds: true, bulkSeeds: true, distinctNames: true })
 store.archive(store.getSnapshot()[1].id)
 const version = { basePath: '/archiving/version-13', archivedTab: false, hideUnsaved: true, massCreation: true, genericArchiveSystem: true, searchNameOnly: true, largeListDescription: true, scheduledDeletion: true }
 

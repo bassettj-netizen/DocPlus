@@ -60,6 +60,8 @@ export default function DocumentsPage() {
   const navigate = useNavigate()
   const { basePath, genericArchiveSystem, searchNameOnly, largeListDescription, scheduledDeletion, archiving, noSharing, noEmployee } = useArchivingVersion()
   const archiveSystem = genericArchiveSystem ? GENERIC_ARCHIVE_SYSTEM : ARCHIVE_SYSTEM
+  // Versions 13–15 (Figma "Documents" Archived tab): "Filed in your HR system", without the personnel file.
+  const archiveLocation = genericArchiveSystem ? `Filed in ${archiveSystem}` : `Filed in the employee’s personnel file in ${archiveSystem}`
   // New documents are only listed once they've been saved. Bulk documents
   // (Version 13's Mass creation) have their own list.
   const documents = useDocuments().filter((doc) => !doc.unsaved && !doc.employeeIds)
@@ -152,7 +154,7 @@ export default function DocumentsPage() {
                 </Typography>
                 <Typography as="span" size={largeListDescription ? 'base' : 'base-sm'} color="neutral-darken2">
                   {tab === 'archived'
-                    ? `Filed in the employee’s personnel file in ${archiveSystem}. Includes documents shared with you.`
+                    ? `${archiveLocation}.${noSharing ? '' : ' Includes documents shared with you.'}`
                     : noSharing
                       ? 'Documents you’re still working on.'
                       : archiving === 'none'
@@ -177,7 +179,7 @@ export default function DocumentsPage() {
                 dismissible={false}
                 icon={iconType.InfoCircleFilled}
                 header={`Archived documents are deleted from HR Dokumente ${ARCHIVE_RETENTION_DAYS} days after they’re archived`}
-                content={`The archived copy stays in the employee’s personnel file in ${archiveSystem}. Export a copy before then if you still need it here.`}
+                content={`The archived copy stays ${archiveLocation.replace(/^Filed in/, 'in')}. Export a copy before then if you still need it here.`}
               />
             )}
 
