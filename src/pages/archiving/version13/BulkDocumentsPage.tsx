@@ -40,7 +40,7 @@ function ArchiveProgress({ doc }: { doc: HrdDocument }) {
 // shows how far it's got.
 export default function BulkDocumentsPage() {
   const navigate = useNavigate()
-  const { basePath, archiving } = useArchivingVersion()
+  const { basePath, archiving, bulkDocumentsHeading } = useArchivingVersion()
   const documents = useDocuments().filter((doc) => doc.employeeIds && !doc.unsaved)
   const [searchParams, setSearchParams] = useSearchParams()
   // Versions 14 and 15 (no archiving): only ever the open documents.
@@ -95,7 +95,7 @@ export default function BulkDocumentsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 16, minHeight: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography as="h1" size="heading-lg" weight="bold" color="neutral-darken5">
-              Mass creation
+              {bulkDocumentsHeading ? 'Documents' : 'Mass creation'}
             </Typography>
             <ButtonPrimary onClick={() => navigate(`${basePath}/bulk/new/employees`)}>New bulk document</ButtonPrimary>
           </div>

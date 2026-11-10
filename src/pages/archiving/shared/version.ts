@@ -31,6 +31,8 @@ export interface ArchivingVersion {
   archiving?: 'upgrade' | 'none'
   /** Versions 13 and 14: the Documents list's heading reads "Documents" instead of "Choose a new or existing document". */
   documentsHeading?: boolean
+  /** Version 13: the Mass creation list's heading reads "Documents" too, instead of "Mass creation". */
+  bulkDocumentsHeading?: boolean
   /** Version 14: sharing is an upgrade feature, so no documents are shared with the user — no Owner column, and the
    *  list's description doesn't mention shared documents. */
   noSharing?: boolean
