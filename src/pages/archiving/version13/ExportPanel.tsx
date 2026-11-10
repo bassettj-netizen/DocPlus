@@ -128,8 +128,21 @@ function ArchiveUpsell({ system, bulk, onUpgrade }: { system: string; bulk: bool
   )
 }
 
+interface ChoiceCardProps {
+  checked: boolean
+  onSelect: () => void
+  /** A GOAT-UI icon name, or an icon of its own (Send via email's file-type icons). */
+  icon: string | ReactNode
+  title: string
+  description?: string
+  /** The radio group's name; "file-layout" for the Export panel's cards. */
+  name?: string
+  /** Send via email: the checked card is tinted blue too, as in its Figma panel. */
+  tinted?: boolean
+}
+
 /** The bulk design's "Separate files / One combined file" cards: a radio, an icon and title, and a description. */
-function ChoiceCard({ checked, onSelect, icon, title, description }: { checked: boolean; onSelect: () => void; icon: string; title: string; description: string }) {
+export function ChoiceCard({ checked, onSelect, icon, title, description, name = 'file-layout', tinted = false }: ChoiceCardProps) {
   return (
     <label
       style={{
@@ -140,17 +153,20 @@ function ChoiceCard({ checked, onSelect, icon, title, description }: { checked: 
         borderRadius: 8,
         cursor: 'pointer',
         border: `1px solid ${checked ? colorPalette.blue.base : colorPalette.neutral.lighten2}`,
+        backgroundColor: tinted && checked ? colorPalette.blue.lighten5 : undefined,
       }}
     >
-      <Radio name="file-layout" checked={checked} onChange={onSelect} />
+      <Radio name={name} checked={checked} onChange={onSelect} />
       <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <Icon type={icon} size={16} />
+          {typeof icon === 'string' ? <Icon type={icon} size={16} /> : icon}
           <Typography as="span">{title}</Typography>
         </span>
-        <Typography as="span" size="base-sm" color="neutral-darken2">
-          {description}
-        </Typography>
+        {description && (
+          <Typography as="span" size="base-sm" color="neutral-darken2">
+            {description}
+          </Typography>
+        )}
       </span>
     </label>
   )
@@ -194,7 +210,8 @@ export default function ExportPanel({
 
   // Version 14: individual documents have no employee, so nothing here depends on one.
   const { noEmployee, genericArchiveSystem, archiving } = useArchivingVersion()
-  const withoutEmployee = !!noEmployee && !bulk
+  // Version 14, or a Send via email document created without an employee.
+  const withoutEmployee = (!!noEmployee || employees.length === 0) && !bulk
   const inScope = bulk && scope === 'selected' ? employees.filter((e) => selectedIds.includes(e.id)) : employees
   const toArchive = inScope.filter((e) => !archivedEmployeeIds.includes(e.id))
   const alreadyArchived = inScope.length - toArchive.length

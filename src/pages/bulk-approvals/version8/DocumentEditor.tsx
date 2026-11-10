@@ -4,7 +4,6 @@ import { DOCUMENT_POOL, EMPTY_FILTERS, type Approver, type DocumentFilters } fro
 import RequestApprovalPanel from './RequestApprovalPanel'
 import AssignDocumentsPanel from './AssignDocumentsPanel'
 import DocumentEditorHeader from './DocumentEditorHeader'
-import DocumentEditorStatusBar from './DocumentEditorStatusBar'
 import DocumentEditorSidebar from './DocumentEditorSidebar'
 import DocumentMetadataCard from './DocumentMetadataCard'
 import DocumentPreview from './DocumentPreview'
@@ -101,6 +100,8 @@ export default function DocumentEditor() {
   }
 
   const [view, setView] = useState<string | number>('Editor view')
+  // The form's Employee gender, which the preview's gendered wording follows.
+  const [gender, setGender] = useState('female')
   const { notification } = useNotifications()
 
   const handleSubmit = () => {
@@ -118,15 +119,13 @@ export default function DocumentEditor() {
         }}
       />
 
-      <DocumentEditorStatusBar />
-
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <div style={{ flexShrink: 0 }}>
           <DocumentEditorSidebar />
         </div>
 
         <div style={{ width: 440, flexShrink: 0, minHeight: 0 }}>
-          <DocumentMetadataCard />
+          <DocumentMetadataCard gender={gender} onGenderChange={setGender} />
         </div>
 
         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
@@ -145,7 +144,7 @@ export default function DocumentEditor() {
               backgroundColor: PREVIEW_CANVAS_COLOR,
             }}
           >
-            <DocumentPreview />
+            <DocumentPreview gender={gender} />
           </div>
         </div>
       </div>

@@ -54,6 +54,13 @@ const groups = [
       { label: 'No archiving', path: '/archiving/version-15' },
     ],
   },
+  {
+    title: 'Send via email',
+    items: [
+      { label: 'Send via email', path: '/send-via-email/version-1' },
+      { label: 'No employee', path: '/send-via-email/version-2' },
+    ],
+  },
 ]
 
 export default function MenuPage() {

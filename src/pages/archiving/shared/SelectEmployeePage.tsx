@@ -19,7 +19,7 @@ const COLUMNS: TableColumnsType<Employee> = [
 // Step 1 of creating a document, as on the Figma "Select an employee" screen.
 export default function SelectEmployeePage() {
   const navigate = useNavigate()
-  const { basePath } = useArchivingVersion()
+  const { basePath, optionalEmployee } = useArchivingVersion()
   const [searchParams] = useSearchParams()
   const [selectedId, setSelectedId] = useState<string | undefined>(searchParams.get('employee') ?? undefined)
   const [search, setSearch] = useState('')
@@ -70,8 +70,9 @@ export default function SelectEmployeePage() {
 
           <CreateFlowFooter
             step={0}
-            continueDisabled={!selectedId}
-            onContinue={() => navigate(`${basePath}/new/template?employee=${selectedId}`)}
+            // Send via email: the employee is optional, so Continue works with none selected.
+            continueDisabled={!selectedId && !optionalEmployee}
+            onContinue={() => navigate(`${basePath}/new/template${selectedId ? `?employee=${selectedId}` : ''}`)}
           />
         </div>
       </div>

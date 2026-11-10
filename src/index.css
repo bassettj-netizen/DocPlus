@@ -140,3 +140,23 @@ body.archiving-editor:not(.archiving-toasts-corner) .goat-notification-topRight 
   /* !important: the menu's own (more specific) rule hides the label's overflow. */
   overflow: visible !important;
 }
+
+/* Send via email panel: line the step titles up with their numbered circles,
+   and the Email address header's label and chip up with its arrow — GOAT-UI
+   sits both a few pixels high. Scoped to the panel's content. */
+.send-email-panel .goat-steps-item-title {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+.send-email-panel .goat-steps-item-description:has(> p:empty) {
+  display: none;
+}
+.send-email-panel .goat-collapse-header {
+  align-items: center !important;
+}
+.send-email-panel .goat-collapse-header-text {
+  display: flex;
+  align-items: center;
+  align-self: center;
+}

@@ -13,7 +13,7 @@ import { useArchivingVersion } from './version'
 export default function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { basePath, massCreation, archiving } = useArchivingVersion()
+  const { basePath, massCreation, archiving, adminMenu, massCreationDisabled } = useArchivingVersion()
   const [collapsed, setCollapsed] = useState(false)
   const [upgradeOpen, setUpgradeOpen] = useState(false)
   // Versions with Mass creation split Documents into its two lists.
@@ -31,7 +31,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           // Version 14: Mass creation is an upgrade feature too — the dot, and the upgrade dialog instead of the list.
           archiving === 'upgrade'
             ? { key: 'mass-creation', label: <UpgradeDot>Mass creation</UpgradeDot>, icon: <Icon type={iconType.LayersVerFilled} />, onClick: () => setUpgradeOpen(true) }
-            : { key: 'mass-creation', label: 'Mass creation', icon: <Icon type={iconType.LayersVerFilled} />, onClick: () => navigate(`${basePath}/bulk`) },
+            : massCreationDisabled
+              ? // Send via email Version 1: shown as usual, but it doesn't link anywhere.
+                { key: 'mass-creation', label: 'Mass creation', icon: <Icon type={iconType.LayersVerFilled} />, onClick: () => {} }
+              : { key: 'mass-creation', label: 'Mass creation', icon: <Icon type={iconType.LayersVerFilled} />, onClick: () => navigate(`${basePath}/bulk`) },
         ],
       }
     : { key: 'documents', label: 'Documents', icon: <Icon type={iconType.ArticleFilled} />, onClick: () => navigate(`${basePath}/documents`) }
@@ -39,7 +42,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const topItems = [
     { key: 'home', label: 'Home', icon: <Icon type={iconType.HouseFilled} />, onClick: () => {} },
     documentsItem,
-    { key: 'admin', label: 'Admin', icon: <Icon type={iconType.LockFilled} />, onClick: () => {} },
+    // Send via email: Admin is a submenu, as in the live product; its items don't go anywhere here.
+    adminMenu
+      ? {
+          key: 'admin',
+          label: 'Admin',
+          icon: <Icon type={iconType.LockFilled} />,
+          children: [
+            { key: 'admin-templates', label: 'Templates', onClick: () => {} },
+            { key: 'admin-users', label: 'Users', onClick: () => {} },
+          ],
+        }
+      : { key: 'admin', label: 'Admin', icon: <Icon type={iconType.LockFilled} />, onClick: () => {} },
   ] as unknown as SidebarItem[]
 
   const bottomItems = [

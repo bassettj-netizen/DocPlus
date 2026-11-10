@@ -28,10 +28,9 @@ function SectionChip({ label, complete }: { label: string; complete: boolean }) 
   )
 }
 
-export default function DocumentMetadataCard() {
+export default function DocumentMetadataCard({ gender, onGenderChange }: { gender: string; onGenderChange: (gender: string) => void }) {
   const [headerFooter, setHeaderFooter] = useState<string>()
   const [coverLetter, setCoverLetter] = useState('no')
-  const [gender, setGender] = useState('female')
 
   return (
     <div
@@ -90,7 +89,7 @@ export default function DocumentMetadataCard() {
             { label: 'Diverse', value: 'diverse' },
           ]}
           value={gender}
-          onChange={(event) => setGender(event.target.value)}
+          onChange={(event) => onGenderChange(event.target.value)}
         />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

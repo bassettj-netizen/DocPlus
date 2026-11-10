@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ButtonGhost, constants, Icon, iconType, Segmented, Sidebar, Typography } from '@goat-ui/goat-ui-core'
 import type { SidebarItem } from '@goat-ui/goat-ui-core'
 import DocumentPreview from './DocumentPreview'
+import type { DocumentFields } from './fields'
 import { useArchivingVersion } from './version'
 
 const { colorPalette } = constants
@@ -22,11 +23,13 @@ interface EditorLayoutProps {
   children?: ReactNode
   /** Where Back to documents goes; the Documents list by default. */
   backPath?: string
+  /** The editor's values, which the preview's fields follow (placeholders until they're filled in). */
+  fields?: DocumentFields
 }
 
 // The document editor from the Figma flows: navy top bar, icon rail, the
 // 440px fields column, and the A4 preview.
-export default function EditorLayout({ title, actions, form, footer, children, backPath }: EditorLayoutProps) {
+export default function EditorLayout({ title, actions, form, footer, children, backPath, fields }: EditorLayoutProps) {
   const navigate = useNavigate()
   const { basePath } = useArchivingVersion()
   const [view, setView] = useState<string | number>('Editor view')
@@ -79,7 +82,7 @@ export default function EditorLayout({ title, actions, form, footer, children, b
                 <Segmented options={['Editor view', 'PDF preview']} value={view} onChange={setView} />
               </div>
               <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 40, display: 'flex', justifyContent: 'center', backgroundColor: PREVIEW_CANVAS_COLOR }}>
-                <DocumentPreview />
+                <DocumentPreview fields={fields} />
               </div>
             </div>
           </div>

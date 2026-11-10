@@ -179,6 +179,7 @@ export default function EditorPage() {
 
   return (
     <EditorLayout
+      fields={editor.fields}
       title={editor.fields.title || doc.name}
       form={form}
       footer={<FlowToolbar left={left} center={<FlowSteps current={STEP_INDEX[step]} />} right={right} />}

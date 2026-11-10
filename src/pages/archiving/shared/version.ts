@@ -35,6 +35,19 @@ export interface ArchivingVersion {
   /** Version 14: picking an employee is an upgrade feature — New document goes straight to the templates, the
    *  Documents list has no Employee column, and individual documents are exported without one. */
   noEmployee?: boolean
+  /** Send via email: the individual editor's Share button opens a menu (Request information, …, Send via email), and
+   *  Send via email opens a side panel — Receiver, Email, Files — that ends in an "Email(s) sent!" toast. */
+  sendViaEmail?: boolean
+  /** Send via email: Admin opens a submenu in the side menu, as in the live product (decorative here). */
+  adminMenu?: boolean
+  /** Send via email Version 1: Mass creation is in the side menu, styled as usual, but doesn't link anywhere. */
+  massCreationDisabled?: boolean
+  /** Send via email Version 1: the individual editor's header as in the live product — Share and Export always
+   *  active (even with unsaved changes), both with a filled chevron, and no "Changes saved" note. */
+  liveEditorHeader?: boolean
+  /** Send via email: picking an employee is optional — Continue is active with none selected, and the document is
+   *  created without one (Send via email then skips its Receiver step, as in "No employee"). */
+  optionalEmployee?: boolean
 }
 
 export const ArchivingVersionContext = createContext<ArchivingVersion>({ basePath: '/archiving/version-1', archivedTab: false })

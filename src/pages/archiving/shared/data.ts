@@ -56,6 +56,12 @@ export function employeeName(employee: Employee) {
   return `${employee.firstName} ${employee.lastName}`
 }
 
+/** A made-up work address for Send via email, e.g. sledge.hammer@docplus.de ("Dr." and spaces left out). */
+export function employeeEmail(employee: Employee) {
+  const part = (name: string) => name.replace(/^Dr\.\s*/, '').toLowerCase().replace(/\s+/g, '')
+  return `${part(employee.firstName)}.${part(employee.lastName)}@docplus.de`
+}
+
 export type TemplateSource = 'my-company' | 'haufe'
 
 export interface Template {

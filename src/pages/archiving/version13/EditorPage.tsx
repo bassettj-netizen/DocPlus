@@ -8,6 +8,7 @@ import {
   ButtonSecondary,
   Chip,
   chipStyles,
+  Dropdown,
   Icon,
   iconType,
   toastPlacements,
@@ -24,6 +25,7 @@ import useDocumentEditor from '../shared/useDocumentEditor'
 import { useArchivingVersion } from '../shared/version'
 import ExportPanel from './ExportPanel'
 import { UpgradeDot, UpgradeModal } from '../shared/Upgrade'
+import SendEmailPanel, { type SendRequest } from '../../send-via-email/SendEmailPanel'
 
 /** The Figma "Bulk documents" explainer at the top of the bulk editor. */
 function BulkBanner({ count }: { count: number }) {
@@ -62,7 +64,7 @@ export default function EditorPage({ bulk = false }: { bulk?: boolean }) {
 function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; bulk: boolean }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { basePath, archiving } = useArchivingVersion()
+  const { basePath, archiving, sendViaEmail, noEmployee, liveEditorHeader } = useArchivingVersion()
   const { notification } = useNotifications()
   const [upgradeOpen, setUpgradeOpen] = useState(false)
   const editor = useDocumentEditor(documentId)
@@ -75,6 +77,8 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
   const createdAsVersion = (location.state as { newVersion?: boolean } | null)?.newVersion
   const [justSaved, setJustSaved] = useState(false)
   const [exportKey, setExportKey] = useState(0)
+  const [sending, setSending] = useState(false)
+  const [sendKey, setSendKey] = useState(0)
 
   const listPath = bulk ? `${basePath}/bulk` : `${basePath}/documents`
   if (!editor.doc || !!editor.doc.employeeIds !== bulk) return <Navigate to={listPath} replace />
@@ -85,6 +89,9 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
   const archived = !!doc.archivedAt
   const partlyArchived = bulk && !archived ? archivedCount(doc) : 0
   const unsaved = editor.dirty || !!doc.unsaved
+  // Send via email Version 1: Share and Export stay active with unsaved changes, and no "Changes saved" note.
+  const liveHeader = !!liveEditorHeader && !bulk
+  const actionsLocked = unsaved && !liveHeader
   const readOnly = exporting || (archived && !editing)
   const archivedEmployeeIds = bulk ? Object.keys(doc.archivedFor ?? {}) : archived ? [doc.employeeId] : []
 
@@ -117,12 +124,17 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
     </span>
   )
 
-  const exportButton = unsaved ? (
+  // Send via email: Export carries a chevron, as in its Figma header (Share doesn't).
+  const exportChevron = liveHeader ? iconType.ChevronDownFilled : sendViaEmail && !bulk ? iconType.ChevronDownOutlined : undefined
+  const exportButton = actionsLocked ? (
     <Tooltip title="Save your changes to export" placement={tooltipPlacements.BOTTOM_RIGHT}>
-      <ButtonPrimary disabled>Export</ButtonPrimary>
+      <ButtonPrimary disabled rightIcon={exportChevron}>
+        Export
+      </ButtonPrimary>
     </Tooltip>
   ) : (
     <ButtonPrimary
+      rightIcon={exportChevron}
       onClick={() => {
         setExportKey((key) => key + 1)
         setExporting(true)
@@ -135,7 +147,23 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
   // Share sits just before Export and follows its rules: disabled, with the same kind of tooltip, while there are
   // unsaved changes. A prototype: nothing is shared yet. Version 14: an upgrade feature — the dot, and the upgrade dialog.
   const shareUpgrade = archiving === 'upgrade'
-  const shareButton = unsaved ? (
+  // Send via email: Share opens the live product's menu, and its last item opens the Send via email panel. The
+  // other items are there for the look; they don't do anything in this prototype.
+  const shareMenu = !!sendViaEmail && !bulk
+  const openSendEmail = () => {
+    setSendKey((key) => key + 1)
+    setSending(true)
+  }
+  // A prototype: nothing is sent. An address with "error" in it shows the error toast, so both outcomes can be demoed.
+  const send = ({ addresses }: SendRequest) => {
+    if (addresses.some((address) => address.toLowerCase().includes('error'))) {
+      notification.error({ title: 'There was an issue with your request. Please try again.', placement: toastPlacements.TOP_RIGHT })
+      return
+    }
+    setSending(false)
+    notification.success({ title: addresses.length === 1 ? 'Email sent!' : 'Emails sent!', placement: toastPlacements.TOP_RIGHT })
+  }
+  const shareButton = actionsLocked ? (
     <Tooltip title="Save your changes to share" placement={tooltipPlacements.BOTTOM}>
       <span>{shareUpgrade ? <UpgradeDot><ButtonSecondary disabled>Share</ButtonSecondary></UpgradeDot> : <ButtonSecondary disabled>Share</ButtonSecondary>}</span>
     </Tooltip>
@@ -143,6 +171,18 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
     <UpgradeDot>
       <ButtonSecondary onClick={() => setUpgradeOpen(true)}>Share</ButtonSecondary>
     </UpgradeDot>
+  ) : shareMenu ? (
+    <Dropdown
+      items={[
+        { key: 'request-information', label: 'Request information' },
+        { key: 'request-approval', label: 'Request approval' },
+        { key: 'request-signature', label: 'Request signature' },
+        { key: 'manage-access', label: 'Manage access' },
+        { key: 'send-via-email', label: 'Send via email', onClick: openSendEmail },
+      ]}
+    >
+      <ButtonSecondary rightIcon={liveHeader ? iconType.ChevronDownFilled : undefined}>Share</ButtonSecondary>
+    </Dropdown>
   ) : (
     <ButtonSecondary onClick={() => {}}>Share</ButtonSecondary>
   )
@@ -170,7 +210,7 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
   } else {
     actions = (
       <>
-        {(justSaved || createdAsVersion) && !unsaved && savedNote}
+        {(justSaved || createdAsVersion) && !unsaved && !liveHeader && savedNote}
         {partlyArchived > 0 && (
           <Tooltip title={`Archived in ${ARCHIVE_SYSTEM} for ${partlyArchived} of ${employees.length} employees. Their copies won’t change when you save.`} placement={tooltipPlacements.BOTTOM}>
             <span>
@@ -187,6 +227,7 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
 
   return (
     <EditorLayout
+      fields={editor.fields}
       title={editor.fields.title || doc.name}
       actions={actions}
       backPath={listPath}
@@ -206,6 +247,7 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
         onArchive={(employeeIds, folder) => (bulk ? editor.archiveFor(employeeIds, folder) : editor.archive(folder))}
         onClose={() => setExporting(false)}
       />
+      {shareMenu && <SendEmailPanel key={`send-${sendKey}`} visible={sending} employee={noEmployee ? undefined : employees[0]} onSend={send} onClose={() => setSending(false)} />}
       {shareUpgrade && <UpgradeModal visible={upgradeOpen} onClose={() => setUpgradeOpen(false)} />}
     </EditorLayout>
   )

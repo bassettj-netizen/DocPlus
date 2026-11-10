@@ -47,6 +47,8 @@ import ArchivingV12 from './pages/archiving/Version12'
 import ArchivingV13 from './pages/archiving/Version13'
 import ArchivingV14 from './pages/archiving/Version14'
 import ArchivingV15 from './pages/archiving/Version15'
+import SendViaEmailV1 from './pages/send-via-email/Version1'
+import SendViaEmailV2 from './pages/send-via-email/Version2'
 
 function AppShell() {
   const navigate = useNavigate()
@@ -151,6 +153,8 @@ function App() {
         <Route path="/archiving/version-13/*" element={<ArchivingV13 />} />
         <Route path="/archiving/version-14/*" element={<ArchivingV14 />} />
         <Route path="/archiving/version-15/*" element={<ArchivingV15 />} />
+        <Route path="/send-via-email/version-1/*" element={<SendViaEmailV1 />} />
+        <Route path="/send-via-email/version-2/*" element={<SendViaEmailV2 />} />
       </Routes>
     </ThemeProvider>
   )

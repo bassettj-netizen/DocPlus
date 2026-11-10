@@ -32,9 +32,10 @@ interface SelectTemplatePageProps {
 export default function SelectTemplatePage({ bulk = false }: SelectTemplatePageProps) {
   const navigate = useNavigate()
   const store = useArchivingStore()
-  const { basePath, noEmployee } = useArchivingVersion()
-  // Version 14: no employee step — a document is created from its template alone.
-  const withoutEmployee = noEmployee && !bulk
+  const { basePath, noEmployee, optionalEmployee } = useArchivingVersion()
+  // Version 14: no employee step — a document is created from its template alone. Send via email: the employee
+  // step is there but optional, so a document can be created without one too.
+  const withoutEmployee = (noEmployee || optionalEmployee) && !bulk
   const [searchParams] = useSearchParams()
   const employeeId = searchParams.get('employee')
   const employeeIds = searchParams.get('employees')?.split(',').filter(Boolean) ?? []
@@ -178,7 +179,7 @@ export default function SelectTemplatePage({ bulk = false }: SelectTemplatePageP
               step={1}
               // Without an employee step, the first step has no Back (Back to documents is above).
               onBack={
-                withoutEmployee
+                withoutEmployee && !optionalEmployee
                   ? undefined
                   : () => navigate(bulk ? `${basePath}/bulk/new/employees?employees=${employeeIds.join(',')}` : `${basePath}/new/employee?employee=${employeeId ?? ''}`)
               }

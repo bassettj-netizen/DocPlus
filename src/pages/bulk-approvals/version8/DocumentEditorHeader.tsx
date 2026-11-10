@@ -43,11 +43,11 @@ export default function DocumentEditorHeader({ title, onRequestApproval }: Docum
             { key: 'manage-access', label: 'Manage access' },
           ]}
         >
-          <ButtonSecondary rightIcon={iconType.ChevronDownOutlined}>Share</ButtonSecondary>
+          <ButtonSecondary rightIcon={iconType.ChevronDownFilled}>Share</ButtonSecondary>
         </Dropdown>
 
         <Dropdown items={[{ key: 'download-pdf', label: 'Download as PDF' }]}>
-          <ButtonPrimary rightIcon={iconType.ChevronDownOutlined}>Export</ButtonPrimary>
+          <ButtonPrimary rightIcon={iconType.ChevronDownFilled}>Export</ButtonPrimary>
         </Dropdown>
       </div>
     </div>

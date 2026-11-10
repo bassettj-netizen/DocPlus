@@ -118,6 +118,7 @@ export default function EditorPage() {
 
   return (
     <EditorLayout
+      fields={editor.fields}
       title={editor.fields.title || doc.name}
       actions={actions}
       form={<DocumentForm fields={editor.fields} onChange={editor.change} readOnly={readOnly} />}
