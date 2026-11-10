@@ -58,7 +58,7 @@ function employeeOf(doc: HrdDocument) {
 // either tab alongside their own, told apart by the Owner column.
 export default function DocumentsPage() {
   const navigate = useNavigate()
-  const { basePath, genericArchiveSystem, searchNameOnly, largeListDescription, scheduledDeletion, archiving, noSharing, noEmployee } = useArchivingVersion()
+  const { basePath, genericArchiveSystem, searchNameOnly, largeListDescription, scheduledDeletion, archiving, noSharing, noEmployee, documentsHeading } = useArchivingVersion()
   const archiveSystem = genericArchiveSystem ? GENERIC_ARCHIVE_SYSTEM : ARCHIVE_SYSTEM
   // Versions 13–15 (Figma "Documents" Archived tab): "Filed in your HR system", without the personnel file.
   const archiveLocation = genericArchiveSystem ? `Filed in ${archiveSystem}` : `Filed in the employee’s personnel file in ${archiveSystem}`
@@ -120,7 +120,7 @@ export default function DocumentsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 16, minHeight: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography as="h1" size="heading-lg" weight="bold" color="neutral-darken5">
-              Choose a new or existing document
+              {documentsHeading ? 'Documents' : 'Choose a new or existing document'}
             </Typography>
             <ButtonPrimary onClick={() => navigate(`${basePath}/new/${noEmployee ? 'template' : 'employee'}`)}>New document</ButtonPrimary>
           </div>

@@ -29,6 +29,8 @@ export interface ArchivingVersion {
   /** Versions 14 and 15: Version 13 for a plan without archiving. 'upgrade' keeps the archiving UI, marked with the
    *  orange upgrade dot, and opens the upgrade dialog instead of archiving; 'none' leaves archiving out altogether. */
   archiving?: 'upgrade' | 'none'
+  /** Versions 13 and 14: the Documents list's heading reads "Documents" instead of "Choose a new or existing document". */
+  documentsHeading?: boolean
   /** Version 14: sharing is an upgrade feature, so no documents are shared with the user — no Owner column, and the
    *  list's description doesn't mention shared documents. */
   noSharing?: boolean
