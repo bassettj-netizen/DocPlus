@@ -1,5 +1,19 @@
 import { useState, type ReactNode } from 'react'
-import { ButtonGhost, ButtonPrimary, ButtonSecondary, constants, Icon, iconType, Panel, RadioGroup, radioGroupDirection, Select, Typography } from '@goat-ui/goat-ui-core'
+import {
+  ButtonGhost,
+  ButtonPrimary,
+  ButtonSecondary,
+  constants,
+  Icon,
+  iconType,
+  Panel,
+  RadioGroup,
+  radioGroupDirection,
+  Select,
+  toastPlacements,
+  Typography,
+  useNotifications,
+} from '@goat-ui/goat-ui-core'
 import DocumentSummary from '../shared/DocumentSummary'
 import { ARCHIVE_FOLDERS, ARCHIVE_RETENTION_DAYS, ARCHIVE_SYSTEM } from '../shared/data'
 
@@ -30,6 +44,9 @@ function Done({ children }: { children: ReactNode }) {
     </span>
   )
 }
+
+// How long the prototype pretends archiving takes.
+const ARCHIVE_DELAY_MS = 3000
 
 const FORMAT_LABELS: Record<ExportFormat, string> = { pdf: 'PDF', word: 'Word' }
 
@@ -81,7 +98,8 @@ function SectionLabel({ children }: { children: ReactNode }) {
 // Archive (pick the personnel-file folder — the template's is preselected —
 // then Archive). Each action happens straight away, in
 // any order or not at all. Downloads aren't confirmed; Archive confirms in
-// its row. Archiving doesn't wait for the mandatory fields. Done
+// its row and with a toast, after the Archive button has shown a loading
+// state for a few seconds (faked). Archiving doesn't wait for the mandatory fields. Done
 // just closes the panel.
 export default function ExportPanel({
   visible,
@@ -96,10 +114,17 @@ export default function ExportPanel({
   const [archivedHere, setArchivedHere] = useState(archived)
   const [folder, setFolder] = useState(initialFolder)
   const [format, setFormat] = useState<ExportFormat>('pdf')
+  const [archiving, setArchiving] = useState(false)
+  const { notification } = useNotifications()
 
   const archive = () => {
-    onArchive(folder)
-    setArchivedHere(true)
+    setArchiving(true)
+    window.setTimeout(() => {
+      onArchive(folder)
+      setArchiving(false)
+      setArchivedHere(true)
+      notification.success({ title: 'Document archived!', placement: toastPlacements.TOP_RIGHT })
+    }, ARCHIVE_DELAY_MS)
   }
 
   return (
@@ -178,11 +203,11 @@ export default function ExportPanel({
                 options={ARCHIVE_FOLDERS.map((name) => ({ label: name, value: name }))}
                 placeholder="Choose a folder"
                 hasSearch
-                disabled={archivedHere}
+                disabled={archivedHere || archiving}
               />
             }
             action={
-              <ButtonSecondary disabled={archivedHere || !folder} onClick={archive}>
+              <ButtonSecondary disabled={archivedHere || !folder} loading={archiving} onClick={archive}>
                 Archive
               </ButtonSecondary>
             }

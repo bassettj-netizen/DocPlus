@@ -24,7 +24,8 @@ import ExportPanel from './ExportPanel'
 // Save is always active; Export is disabled, with a tooltip, until changes
 // are saved. Archiving from there makes the document read-only, with the
 // Archived chip. Save is confirmed by a toast in the screen's top-right
-// corner and "Changes saved" in the bar; Archive by its row in the panel.
+// corner and "Changes saved" in the bar; Archive by its row in the panel and a
+// toast, after a faked loading state on the button.
 //
 // An archived document has Edit in place of Save. Edit unlocks the fields;
 // the archived document itself never changes — saving ("Save as new
