@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Banner, bannerStyles, bannerVariants, ButtonPrimary, Chip, chipStyles, chipVariants, constants, iconType, SearchBar, Table, Tabs, Toggle, Tooltip, Typography } from '@goat-ui/goat-ui-core'
+import { Banner, bannerStyles, bannerVariants, ButtonPrimary, buttonVariants, Modal, modalVariants, Chip, chipStyles, chipVariants, constants, iconType, SearchBar, Table, Tabs, Toggle, Tooltip, Typography } from '@goat-ui/goat-ui-core'
 import type { TableColumnsType } from '@goat-ui/goat-ui-core'
 import AppLayout from '../shared/AppLayout'
 import { ARCHIVE_RETENTION_DAYS, ARCHIVE_SYSTEM, archiveDeletion, GENERIC_ARCHIVE_SYSTEM, EMPLOYEES, employeeName, formatDate, type HrdDocument } from '../shared/data'
 import { ArchivedChip, DocumentsCreated } from '../shared/DocumentsPage'
-import { useDocuments } from '../shared/store'
+import { useArchivingStore, useDocuments } from '../shared/store'
 import { UpgradeDot, UpgradeModal } from '../shared/Upgrade'
 import { useArchivingVersion } from '../shared/version'
 
@@ -58,7 +58,8 @@ function employeeOf(doc: HrdDocument) {
 // either tab alongside their own, told apart by the Owner column.
 export default function DocumentsPage() {
   const navigate = useNavigate()
-  const { basePath, genericArchiveSystem, searchNameOnly, largeListDescription, scheduledDeletion, archiving, noSharing, noEmployee, documentsHeading } = useArchivingVersion()
+  const { basePath, genericArchiveSystem, searchNameOnly, largeListDescription, scheduledDeletion, archiving, noSharing, noEmployee, documentsHeading, deleteDocuments } = useArchivingVersion()
+  const store = useArchivingStore()
   const archiveSystem = genericArchiveSystem ? GENERIC_ARCHIVE_SYSTEM : ARCHIVE_SYSTEM
   // Versions 13–15 (Figma "Documents" Archived tab): "Filed in your HR system", without the personnel file.
   const archiveLocation = genericArchiveSystem ? `Filed in ${archiveSystem}` : `Filed in the employee’s personnel file in ${archiveSystem}`
@@ -71,6 +72,8 @@ export default function DocumentsPage() {
   const [search, setSearch] = useState('')
   const [bulkEdit, setBulkEdit] = useState(false)
   const [upgradeOpen, setUpgradeOpen] = useState(false)
+  // Version 13: the open document waiting on the Delete confirmation.
+  const [deleting, setDeleting] = useState<HrdDocument | null>(null)
 
   const open = (doc: HrdDocument) => navigate(`${basePath}/documents/${doc.id}`)
 
@@ -189,7 +192,12 @@ export default function DocumentsPage() {
               columns={columns}
               rowKey="id"
               pagination={false}
-              actions={(doc) => [{ key: 'open', label: 'Open', props: { onClick: () => open(doc) } }]}
+              actions={(doc) => [
+                // The Table hands each item to the menu as is, so the click has to sit on the item itself:
+                // an onClick under props never fires.
+                { key: 'open', label: 'Open', onClick: () => open(doc) },
+                ...(deleteDocuments && tab === 'open' ? [{ key: 'delete', label: 'Delete', onClick: () => setDeleting(doc) }] : []),
+              ]}
               emptyState={{
                 variant: 'empty',
                 description: query
@@ -207,6 +215,32 @@ export default function DocumentsPage() {
           </div>
         </div>
       </div>
+      {deleteDocuments && (
+        <Modal
+          visible={!!deleting}
+          variant={modalVariants.DANGER}
+          withIcon={false}
+          title="Delete document"
+          onClose={() => setDeleting(null)}
+          footer={{
+            buttons: [
+              { variant: buttonVariants.TERTIARY, props: { children: 'Cancel', onClick: () => setDeleting(null) } },
+              {
+                variant: buttonVariants.DANGER,
+                props: {
+                  children: 'Delete',
+                  onClick: () => {
+                    if (deleting) store.remove(deleting.id)
+                    setDeleting(null)
+                  },
+                },
+              },
+            ],
+          }}
+        >
+          <Typography>Are you sure you want to delete this document? You will no longer be able to access it.</Typography>
+        </Modal>
+      )}
       {archiving === 'upgrade' && <UpgradeModal visible={upgradeOpen} onClose={() => setUpgradeOpen(false)} />}
     </AppLayout>
   )

@@ -114,6 +114,11 @@ export function createArchivingStore({ completedSeeds = false, sharedSeeds = fal
       )
     },
 
+    /** Removes a document for good. */
+    remove(id: string) {
+      update(documents.filter((doc) => doc.id !== id))
+    },
+
     archive(id: string, folder?: string) {
       update(documents.map((doc) => (doc.id === id ? { ...doc, archivedAt: new Date(), ...(folder && { archiveFolder: folder }) } : doc)))
     },
