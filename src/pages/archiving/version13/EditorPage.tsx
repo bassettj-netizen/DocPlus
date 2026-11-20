@@ -64,7 +64,7 @@ export default function EditorPage({ bulk = false }: { bulk?: boolean }) {
 function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; bulk: boolean }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { basePath, archiving, sendViaEmail, noEmployee, liveEditorHeader } = useArchivingVersion()
+  const { basePath, archiving, sendViaEmail, noEmployee, liveEditorHeader, newDocumentActions } = useArchivingVersion()
   const { notification } = useNotifications()
   const [upgradeOpen, setUpgradeOpen] = useState(false)
   const editor = useDocumentEditor(documentId)
@@ -91,7 +91,8 @@ function DocumentEditor({ documentId, bulk }: { documentId: string | undefined; 
   const unsaved = editor.dirty || !!doc.unsaved
   // Send via email Version 1: Share and Export stay active with unsaved changes, and no "Changes saved" note.
   const liveHeader = !!liveEditorHeader && !bulk
-  const actionsLocked = unsaved && !liveHeader
+  // Version 13: a new document's Share and Export stay active until its first save.
+  const actionsLocked = unsaved && !liveHeader && !(newDocumentActions && doc.unsaved)
   const readOnly = exporting || (archived && !editing)
   const archivedEmployeeIds = bulk ? Object.keys(doc.archivedFor ?? {}) : archived ? [doc.employeeId] : []
 

@@ -52,6 +52,9 @@ export interface ArchivingVersion {
   /** Send via email: picking an employee is optional — Continue is active with none selected, and the document is
    *  created without one (Send via email then skips its Receiver step, as in "No employee"). */
   optionalEmployee?: boolean
+  /** Version 13: Share and Export stay active on a new document that hasn't been saved yet. Once it's saved,
+   *  unsaved changes lock them again as usual. */
+  newDocumentActions?: boolean
 }
 
 export const ArchivingVersionContext = createContext<ArchivingVersion>({ basePath: '/archiving/version-1', archivedTab: false })
